@@ -1,0 +1,8 @@
+<?php
+
+/*
+ * Implements hook_install().
+ */
+function colorbox_node_install() {
+  variable_set('colorbox_load', TRUE);
+}

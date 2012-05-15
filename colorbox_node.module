@@ -1,0 +1,55 @@
+<?php
+
+/*
+ * Implments hook_init().
+ */
+function colorbox_node_init() {
+  drupal_add_js(drupal_get_path('module', 'colorbox_node') .'/colorbox_node.js');
+}
+
+/*
+ * Implements hook_menu().
+ */
+function colorbox_node_menu() {
+  $items['colorbox/%colorbox_node_url'] = array(
+    'page callback' => 'colorbox_node_output',
+    'page arguments' => array(1),
+    'access arguments' => array('access content'),
+    'load arguments' => array('%map'),
+    'type' => MENU_CALLBACK,
+  );
+  return $items;
+}
+
+/*
+ * Displays a node view without the page template.
+ * Takes the path as our argument and from that we
+ * will determine the internal path and node id.
+ */
+function colorbox_node_output($nid) {
+  // If we have a node, lets display it
+  if ($node = node_load($nid)) {
+    print drupal_render(node_view($node));
+  }
+  else {
+    // This isn't a node or the node failed to load.
+    watchdog('colorbox_node', t('Failed to load a node while attempting to display it through a colorbox.<br />Node ID: '. $node_id));
+  }
+  exit();
+}
+
+/*
+ * Takes a path as an array of all our arguments from the
+ * url structure.  We then put that structure back together,
+ * find our system path and then return the last element
+ * which should be our node id.
+ */
+function colorbox_node_url_load($arg, $path = array()) {
+  // @TODO: Add some more error checking around the path.
+  // First lets remove colorbox
+  array_shift($path);
+  // Now lets buld our path to return our system path and
+  // retrieve our node id from that.
+  $system_path = drupal_get_normal_path(implode('/', $path));
+  return array_pop(explode('/', $system_path));
+}
