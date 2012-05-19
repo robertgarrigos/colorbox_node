@@ -16,7 +16,13 @@
 					var link = base_path + 'colorbox' + parse.pathname;
 				}
 				// Update our href to the link containing colorbox.
-				$(this).attr('href', link);
+				$(this).attr('href', link + parse.search);
+			});
+			
+			// When using contextual links and clicking from within the colorbox
+			// we need to close down colorbox when opening the built in overlay.
+			$('ul.contextual-links a', context).once('colorboxNodeContextual').click(function() {
+				$.colorbox.close();
 			});
 		}
 	};

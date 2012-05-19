@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * @file
+ * Creates a menu callback with support for displaying a node inside of
+ * a colorbox.
+ */
+
 /*
  * Implments hook_init().
  */
@@ -26,30 +32,46 @@ function colorbox_node_menu() {
  * Takes the path as our argument and from that we
  * will determine the internal path and node id.
  */
-function colorbox_node_output($nid) {
+function colorbox_node_output($path) {
+  // @TODO, we should be able to use this for users too,
+  // Lets beef this up and make it more intelligent around
+  // the system path.
+  
+  // Retrieve our node id from the path.
+  $nid = array_pop(explode('/', $path));
   // If we have a node, lets display it
   if ($node = node_load($nid)) {
+    // @TODO:  If this is a webform, lets modifiy it and add
+    // ajax support to keep the webform inside the modal incase
+    // of any error messages.
+    
+    // We need to fix our destination for contextual links.
+    // This prevents a redirect to a screen with no styles.
+    $_GET['destination'] = drupal_lookup_path('alias', 'node/'. $node->nid);
+    
+    // Render the node to the screen.    
     print drupal_render(node_view($node));
   }
   else {
+    print '<h2>'. t('Page Not Found.') .'</h2>';
+    print t('The following page %path was not found.', array('%path' => $path));
     // This isn't a node or the node failed to load.
     watchdog('colorbox_node', t('Failed to load a node while attempting to display it through a colorbox.<br />Node ID: '. $node_id));
   }
-  exit();
+  // Do our end of page tasks.  This is very important if using
+  // the session for anonymous users.
+  drupal_exit();
 }
 
 /*
  * Takes a path as an array of all our arguments from the
  * url structure.  We then put that structure back together,
- * find our system path and then return the last element
- * which should be our node id.
+ * find our system path and then return it.
  */
 function colorbox_node_url_load($arg, $path = array()) {
-  // @TODO: Add some more error checking around the path.
+  global $language_url;
   // First lets remove colorbox
   array_shift($path);
-  // Now lets buld our path to return our system path and
-  // retrieve our node id from that.
-  $system_path = drupal_get_normal_path(implode('/', $path));
-  return array_pop(explode('/', $system_path));
+  // Now lets buld our path to return our system path,
+  return drupal_get_normal_path(implode('/', $path), $language->language);
 }
