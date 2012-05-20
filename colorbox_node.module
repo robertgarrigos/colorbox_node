@@ -69,9 +69,23 @@ function colorbox_node_output($path) {
  * find our system path and then return it.
  */
 function colorbox_node_url_load($arg, $path = array()) {
-  global $language_url;
   // First lets remove colorbox
   array_shift($path);
+  
+  // Lets determine if we have a prefix from our languages.
+  if(module_exists('locale')) {
+    // Get our language list to pass into our url splitter.
+    $languages = language_list();
+    // Turn the path into a string so we can then remove our prefix.
+    $path_string = implode('/', $path);
+    $language_path = language_url_split_prefix($path_string, $languages);
+    // Separate out the returned path and language.  We should always
+    // have two indexes, the first is the language, second is the path.
+    $language = $language_path[0] ? $language_path[0]->language : '';
+    $final_path = $language_path[1];
+    // Lets find our path based on the current translation.
+    return drupal_get_normal_path($final_path, $language);
+  }
   // Now lets buld our path to return our system path,
-  return drupal_get_normal_path(implode('/', $path), $language->language);
+  return drupal_get_normal_path(implode('/', $path));
 }
