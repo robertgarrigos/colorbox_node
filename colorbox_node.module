@@ -73,6 +73,7 @@ function colorbox_node_output($path) {
     $commands[] = ajax_command_changed('#cboxNode');
     // Lets add our javascript to fire a colorbox modal to insert
     // the markup from the #cboxNode container into colorbox.
+    // @TODO:  Add support for providing a width and height through the URL.
     $javascript = '
     <script type="text/javascript">
       (function ($) {
@@ -157,6 +158,8 @@ function colorbox_node_form_alter(&$form, &$form_state, $form_id) {
  * don't need to do anything else here.
  */
 function colorbox_node_webform_js_submit($form, &$form_state) {
+  // If we have a failure or success, lets resize the modal box again since
+  // it could grow/lose in height with the error/success messages.
   $javascript = '
   <script type="text/javascript">
     (function ($) {
@@ -170,9 +173,8 @@ function colorbox_node_webform_js_submit($form, &$form_state) {
     })(jQuery);
   </script>';
   
-
-  // If we have a failure, lets resize the modal box again since
-  // it will grow in height with the error messages.
+  // If we have a sid, then the form has been successfully submitted.
+  // Lets display our confirmation message.
   if ($form_state['values']['details']['sid']) {
     $node = node_load($form_state['values']['details']['nid']);
     $confirmation = array(
