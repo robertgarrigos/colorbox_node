@@ -157,8 +157,6 @@ function colorbox_node_form_alter(&$form, &$form_state, $form_id) {
  * don't need to do anything else here.
  */
 function colorbox_node_webform_js_submit($form, &$form_state) {
-  // If we have a failure, lets resize the modal box again since
-  // it will grow in height with the error messages.
   $javascript = '
   <script type="text/javascript">
     (function ($) {
@@ -171,13 +169,26 @@ function colorbox_node_webform_js_submit($form, &$form_state) {
       });
     })(jQuery);
   </script>';
+  
 
-  $form['resize_colorbox'] = array(
-    '#type' => 'markup',
-    '#markup' => $javascript,
-  );
-  // We just pass through our $form
-  return $form;
+  // If we have a failure, lets resize the modal box again since
+  // it will grow in height with the error messages.
+  if ($form_state['values']['details']['sid']) {
+    $node = node_load($form_state['values']['details']['nid']);
+    $confirmation = array(
+      '#type' => 'markup',
+      '#markup' => check_markup($node->webform['confirmation'], $node->webform['confirmation_format'], '', TRUE) . $javascript,
+    );
+    return $confirmation;
+  }
+  else {
+    $form['resize_colorbox'] = array(
+      '#type' => 'markup',
+      '#markup' => $javascript,
+    );
+    // We just pass through our $form
+    return $form;
+  }
 }
 
 /*
