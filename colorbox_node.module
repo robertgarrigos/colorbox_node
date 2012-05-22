@@ -52,11 +52,10 @@ function colorbox_node_output($path) {
   $nid = array_pop(explode('/', $path));
   // If we have a node, lets display it
   if ($node = node_load($nid, NULL, TRUE)) {
-    // @TODO:  If this is a webform, lets modifiy it and add
+    // If this is a webform, lets modifiy it and add
     // ajax support to keep the webform inside the modal incase
     // of any error messages.
-    if($node->type == 'webform') {
-      // Lets setup ajax support for this page dynamically.
+    if ($node->type == 'webform') {
       $GLOBALS['colorbox_node_webform'] = $nid;
     }
 
@@ -64,16 +63,16 @@ function colorbox_node_output($path) {
     // This prevents a redirect to a screen with no styles.
     $_GET['destination'] = drupal_lookup_path('alias', 'node/'. $node->nid);
 
-    // Render the node to the screen.
+    // Render the node to a variable to pass on to our commands array.
     $html = drupal_render(node_view($node));
 
     // Use our ajax commands to return our page.
     $commands = array();
     $commands[] = ajax_command_html('#cboxNode', $html);
-    $commands[] = ajax_command_changed('#cboxNode');
     // Lets add our javascript to fire a colorbox modal to insert
     // the markup from the #cboxNode container into colorbox.
     // @TODO:  Add support for providing a width and height through the URL.
+    // @TODO:  Add colorbox module settings back into the colorbox call.
     $javascript = '
     <script type="text/javascript">
       (function ($) {
@@ -91,7 +90,7 @@ function colorbox_node_output($path) {
     $commands = array();
     $commands[] = ajax_command_html('#cboxNode', $html);    
     // This isn't a node or the node failed to load.
-    watchdog('colorbox_node', t('Failed to load a node while attempting to display it through a colorbox.<br />Node ID: '. $node_id));
+    watchdog('colorbox_node', t('Failed to load a node while attempting to display it through a colorbox.<br />Node ID: '. $nid));
   }
   // Render our commands out to the browser.
   print ajax_render($commands);
@@ -110,7 +109,7 @@ function colorbox_node_url_load($arg, $path = array()) {
   array_shift($path);
 
   // Lets determine if we have a prefix from our languages.
-  if(module_exists('locale')) {
+  if (module_exists('locale') && function_exists('language_url_split_prefix')) {
     // Get our language list to pass into our url splitter.
     $languages = language_list();
     // Turn the path into a string so we can then remove our prefix.
@@ -133,13 +132,12 @@ function colorbox_node_url_load($arg, $path = array()) {
 function colorbox_node_form_alter(&$form, &$form_state, $form_id) {
   // Determine if our webform as been set for display inside a
   // colorbox modal window.
-  if($GLOBALS['colorbox_node_webform']) {
+  if ($GLOBALS['colorbox_node_webform']) {
     $webform_id = 'webform_client_form_'. $GLOBALS['colorbox_node_webform'];
     // If we are altering our current webform to be displayed
     // inside a modal box, lets add ajax support.
-    if($form_id == $webform_id) {
+    if ($form_id == $webform_id) {
       // Add our ajax support for this webform dynamically.
-      //$form['actions']['submit']['#attributes']['class'][] = 'use-ajax-submit';
       $form['#prefix'] = '<div id="cboxNodeWrapper">';
       $form['#suffix'] = '</div>';
       $form['actions']['submit']['#ajax'] = array(
@@ -153,13 +151,12 @@ function colorbox_node_form_alter(&$form, &$form_state, $form_id) {
 }
 
 /*
- * Javascript submit handler for our webform.  We just pass through
- * our form as the only intent is to provide javascript support.  We
- * don't need to do anything else here.
+ * Javascript submit handler for our webform.
  */
 function colorbox_node_webform_js_submit($form, &$form_state) {
   // If we have a failure or success, lets resize the modal box again since
   // it could grow/lose in height with the error/success messages.
+  // @TODO:  Change the dynamic resizing only if the user wants it.
   $javascript = '
   <script type="text/javascript">
     (function ($) {
@@ -175,6 +172,7 @@ function colorbox_node_webform_js_submit($form, &$form_state) {
   
   // If we have a sid, then the form has been successfully submitted.
   // Lets display our confirmation message.
+  // @TODO:  Do we want to try and redirect to the URL as well?
   if ($form_state['values']['details']['sid']) {
     $node = node_load($form_state['values']['details']['nid']);
     $confirmation = array(
