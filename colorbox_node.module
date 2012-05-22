@@ -11,6 +11,16 @@
  */
 function colorbox_node_init() {
   drupal_add_js(drupal_get_path('module', 'colorbox_node') .'/colorbox_node.js');
+  //drupal_add_css(drupal_get_path('module', 'colorbox_node') .'/colorbox_node.css');
+  // Setup a global to be used for our dynamic webform inclusion.
+  $GLOBALS['colorbox_node_webform'] = FALSE;
+  // We need to include our misc/ajax.js function all the time in case
+  // we are loading up a webform in a colorbox window.
+  drupal_add_library('system', 'drupal.ajax');
+  drupal_add_library('system', 'drupal.form');
+  drupal_add_library('system', 'jquery.form');
+  drupal_add_library('system', 'drupal.progress');
+  drupal_add_library('system', 'drupal.textarea');
 }
 
 /*
@@ -19,6 +29,7 @@ function colorbox_node_init() {
 function colorbox_node_menu() {
   $items['colorbox/%colorbox_node_url'] = array(
     'page callback' => 'colorbox_node_output',
+  //'delivery callback' => 'ajax_deliver',
     'page arguments' => array(1),
     'access arguments' => array('access content'),
     'load arguments' => array('%map'),
@@ -36,28 +47,53 @@ function colorbox_node_output($path) {
   // @TODO, we should be able to use this for users too,
   // Lets beef this up and make it more intelligent around
   // the system path.
-  
+
   // Retrieve our node id from the path.
   $nid = array_pop(explode('/', $path));
   // If we have a node, lets display it
-  if ($node = node_load($nid)) {
+  if ($node = node_load($nid, NULL, TRUE)) {
     // @TODO:  If this is a webform, lets modifiy it and add
     // ajax support to keep the webform inside the modal incase
     // of any error messages.
-    
+    if($node->type == 'webform') {
+      // Lets setup ajax support for this page dynamically.
+      $GLOBALS['colorbox_node_webform'] = $nid;
+    }
+
     // We need to fix our destination for contextual links.
     // This prevents a redirect to a screen with no styles.
     $_GET['destination'] = drupal_lookup_path('alias', 'node/'. $node->nid);
-    
-    // Render the node to the screen.    
-    print drupal_render(node_view($node));
+
+    // Render the node to the screen.
+    $html = drupal_render(node_view($node));
+
+    // Use our ajax commands to return our page.
+    $commands = array();
+    $commands[] = ajax_command_html('#cboxNode', $html);
+    $commands[] = ajax_command_changed('#cboxNode');
+    // Lets add our javascript to fire a colorbox modal to insert
+    // the markup from the #cboxNode container into colorbox.
+    $javascript = '
+    <script type="text/javascript">
+      (function ($) {
+        $(document).ready(function() {
+          $.fn.colorbox({inline:true, href:"#cboxNode"});
+          console.log(Drupal.settings);
+        });
+      })(jQuery);
+    </script>';
+    $commands[] = ajax_command_html('#cboxNodeJS', $javascript);
   }
   else {
-    print '<h2>'. t('Page Not Found.') .'</h2>';
-    print t('The following page %path was not found.', array('%path' => $path));
+    $html = '<h2>'. t('Page Not Found.') .'</h2>';
+    $html .= t('The following page %path was not found.', array('%path' => $path));
+    $commands = array();
+    $commands[] = ajax_command_html('#cboxNode', $html);    
     // This isn't a node or the node failed to load.
     watchdog('colorbox_node', t('Failed to load a node while attempting to display it through a colorbox.<br />Node ID: '. $node_id));
   }
+  // Render our commands out to the browser.
+  print ajax_render($commands);
   // Do our end of page tasks.  This is very important if using
   // the session for anonymous users.
   drupal_exit();
@@ -71,7 +107,7 @@ function colorbox_node_output($path) {
 function colorbox_node_url_load($arg, $path = array()) {
   // First lets remove colorbox
   array_shift($path);
-  
+
   // Lets determine if we have a prefix from our languages.
   if(module_exists('locale')) {
     // Get our language list to pass into our url splitter.
@@ -89,3 +125,67 @@ function colorbox_node_url_load($arg, $path = array()) {
   // Now lets buld our path to return our system path,
   return drupal_get_normal_path(implode('/', $path));
 }
+
+/*
+ * Implements hook_form_alter().
+ */
+function colorbox_node_form_alter(&$form, &$form_state, $form_id) {
+  // Determine if our webform as been set for display inside a
+  // colorbox modal window.
+  if($GLOBALS['colorbox_node_webform']) {
+    $webform_id = 'webform_client_form_'. $GLOBALS['colorbox_node_webform'];
+    // If we are altering our current webform to be displayed
+    // inside a modal box, lets add ajax support.
+    if($form_id == $webform_id) {
+      // Add our ajax support for this webform dynamically.
+      //$form['actions']['submit']['#attributes']['class'][] = 'use-ajax-submit';
+      $form['#prefix'] = '<div id="cboxNodeWrapper">';
+      $form['#suffix'] = '</div>';
+      $form['actions']['submit']['#ajax'] = array(
+        'callback' => 'colorbox_node_webform_js_submit',
+        'wrapper' => 'cboxNodeWrapper',
+        'method' => 'replace',
+        'effect' => 'fade',
+      );
+    }
+  }
+}
+
+/*
+ * Javascript submit handler for our webform.  We just pass through
+ * our form as the only intent is to provide javascript support.  We
+ * don't need to do anything else here.
+ */
+function colorbox_node_webform_js_submit($form, &$form_state) {
+  // If we have a failure, lets resize the modal box again since
+  // it will grow in height with the error messages.
+  $javascript = '
+  <script type="text/javascript">
+    (function ($) {
+      $(document).ready(function() {
+        setTimeout(function() {
+          var h = $("#cboxNode").height() + 100;
+          var w = $("#cboxWrapper").width();
+          $.fn.colorbox.resize({width:w, height:h});
+        }, 0);
+      });
+    })(jQuery);
+  </script>';
+
+  $form['resize_colorbox'] = array(
+    '#type' => 'markup',
+    '#markup' => $javascript,
+  );
+  // We just pass through our $form
+  return $form;
+}
+
+/*
+ * Implements hook_page_alter().
+ */
+function colorbox_node_page_alter(&$page) {
+  $page['page_bottom']['cboxNode'] = array(
+    '#type' => 'markup',
+    '#markup' => '<div style="display:none"><div id="cboxNode"></div></div><div id="cboxNodeJS"></div>',
+  );
+} 
