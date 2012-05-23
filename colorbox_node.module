@@ -72,12 +72,23 @@ function colorbox_node_output($path) {
     // the markup from the #cboxNode container into colorbox.
     // @TODO:  Add support for providing a width and height through the URL.
     // @TODO:  Add colorbox module settings back into the colorbox call.
+    
+    // Setup our parameters to pass along to our colorbox.
+    $params = array();
+    $params['inline'] = TRUE;
+    $params['href'] = '#cboxNode';
+    if (isset($_GET['width'])) $params['innerWidth'] = $_GET['width'];
+    if (isset($_GET['height'])) $params['innerHeight'] = $_GET['height'];
+
+    $params = json_encode($params);
+
     $javascript = '
     <script type="text/javascript">
       (function ($) {
         $(document).ready(function() {
-          $.fn.colorbox({inline:true, href:"#cboxNode"});
-          console.log(Drupal.settings);
+          var params = '. $params .';
+          console.log(Drupal.settings.colorbox);
+          $.fn.colorbox($.extend({}, Drupal.settings.colorbox, params));
         });
       })(jQuery);
     </script>';
@@ -168,6 +179,11 @@ function colorbox_node_webform_js_submit($form, &$form_state) {
       });
     })(jQuery);
   </script>';
+  
+  // We need a smarter dynamnic resize in case the user doesn't
+  // want it to resize automatically.  Or if its a very large form
+  // and it would extend past the page.
+  $javascript = '';
   
   // If we have a sid, then the form has been successfully submitted.
   // Lets display our confirmation message.
