@@ -19,18 +19,18 @@
 				$(this).attr('href', link + parse.search);
 				
 				// Bind Ajax behaviors to all items showing the class.
-		      var element_settings = {};
-		      // Clicked links look better with the throbber than the progress bar.
-		      element_settings.progress = { 'type': 'throbber' };
-
-		      // For anchor tags, these will go to the target of the anchor rather
-		      // than the usual location.
-		      if ($(this).attr('href')) {
-		        element_settings.url = $(this).attr('href');
-		        element_settings.event = 'click';
-		      }
-		      var base = $(this).attr('id');
-		      Drupal.ajax[base] = new Drupal.ajax(base, this, element_settings);
+			    var element_settings = {};
+			    // Clicked links look better with the throbber than the progress bar.
+			    element_settings.progress = { 'type': 'throbber' };
+	
+			    // For anchor tags, these will go to the target of the anchor rather
+			    // than the usual location.
+			    if ($(this).attr('href')) {
+			    	element_settings.url = $(this).attr('href');
+			    	element_settings.event = 'click';
+			    }
+			    var base = $(this).attr('id');
+			    Drupal.ajax[base] = new Drupal.ajax(base, this, element_settings);
 			});			
 			
 			// When using contextual links and clicking from within the colorbox

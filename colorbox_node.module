@@ -214,4 +214,13 @@ function colorbox_node_page_alter(&$page) {
     '#type' => 'markup',
     '#markup' => '<div style="display:none"><div id="cboxNode"></div></div><div id="cboxNodeJS"></div>',
   );
-} 
+}
+
+/**
+ * Implements hook_views_api().
+ */
+function colorbox_node_views_api() {
+  return array(
+    'api' => 2,
+  );
+}

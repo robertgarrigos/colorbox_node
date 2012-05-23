@@ -3,3 +3,4 @@ description = "Displays a node inside a colorbox without the header and the foot
 core = "7.x"
 package = "colorbox"
 dependencies[] = "colorbox"
+files[] = views/colorbox_node_handler_field_colorbox_node.inc
