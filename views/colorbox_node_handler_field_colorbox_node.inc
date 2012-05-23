@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Views handlers for Colorbox module.
+ * Views handlers for Colorbox Node module.
  */
 
 /**
