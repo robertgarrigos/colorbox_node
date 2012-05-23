@@ -29,7 +29,6 @@ function colorbox_node_init() {
 function colorbox_node_menu() {
   $items['colorbox/%colorbox_node_url'] = array(
     'page callback' => 'colorbox_node_output',
-  //'delivery callback' => 'ajax_deliver',
     'page arguments' => array(1),
     'access arguments' => array('access content'),
     'load arguments' => array('%map'),
