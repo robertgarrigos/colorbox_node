@@ -8,21 +8,8 @@
 /**
  * Implementation of hook_views_data()
  */
-function colorbox_views_data() {
-
-  $data['colorbox']['table']['group'] = t('Colorbox');
-
-  $data['colorbox']['table']['join'] = array(
-    '#global' => array(),
-  );
-
-  $data['colorbox']['colorbox_node'] = array(
-    'title' => t('Node in a Colorbox'),
-    'help' => t('Displays a node inside of a colorbox'),
-    'field' => array(
-      'handler' => 'colorbox_node_handler_field_colorbox_node',
-    ),
-  );
-
-  return $data;
+function colorbox_node_views_data_alter(&$views_data) {
+  // We are going to override our views_handler_field_node
+  $views_data['node']['nid']['field']['handler'] = 'colorbox_node_handler_field_colorbox_node';
+  $views_data['node']['title']['field']['handler'] = 'colorbox_node_handler_field_colorbox_node';
 }

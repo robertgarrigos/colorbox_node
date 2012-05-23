@@ -87,7 +87,6 @@ function colorbox_node_output($path) {
       (function ($) {
         $(document).ready(function() {
           var params = '. $params .';
-          console.log(Drupal.settings.colorbox);
           $.fn.colorbox($.extend({}, Drupal.settings.colorbox, params));
         });
       })(jQuery);
@@ -221,6 +220,6 @@ function colorbox_node_page_alter(&$page) {
  */
 function colorbox_node_views_api() {
   return array(
-    'api' => 2,
+    'api' => 3,
   );
 }

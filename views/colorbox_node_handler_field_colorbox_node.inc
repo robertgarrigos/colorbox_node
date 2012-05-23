@@ -11,10 +11,6 @@
  * @ingroup views_field_handlers
  */
 class colorbox_node_handler_field_colorbox_node extends views_handler_field_node {
-  
-  function init(&$view, &$options) {
-    parent::init($view, $options);
-  }
 
   function option_definition() {
     $options = parent::option_definition();
