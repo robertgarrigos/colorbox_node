@@ -220,6 +220,7 @@ function colorbox_node_page_alter(&$page) {
  */
 function colorbox_node_views_api() {
   return array(
-    'api' => 3,
+    'api' => 2,
+    'path' => drupal_get_path('module', 'colorbox_node') . '/views',
   );
 }
