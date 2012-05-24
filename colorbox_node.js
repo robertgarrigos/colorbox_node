@@ -10,10 +10,18 @@
 				parse.href = href;
 				// Lets add our colorbox link after the base path if necessary.
 				var base_path = Drupal.settings.basePath;
+				var pathname = parse.pathname;
+
+				// Lets check to see if the pathname has a forward slash.
+				// This problem happens in IE7/IE8
+				if(pathname.charAt(0) != '/') {
+					pathname = '/' + parse.pathname;
+				}
+				
 				if(base_path != '/') {
-					var link = parse.pathname.replace(base_path, base_path + 'colorbox/');
+					var link = pathname.replace(base_path, base_path + 'colorbox/');
 				} else {
-					var link = base_path + 'colorbox' + parse.pathname;
+					var link = base_path + 'colorbox' + pathname;
 				}
 				// Update our href to the link containing colorbox.
 				$(this).attr('href', link + parse.search);
