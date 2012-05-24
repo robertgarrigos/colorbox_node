@@ -11,7 +11,6 @@
  */
 function colorbox_node_init() {
   drupal_add_js(drupal_get_path('module', 'colorbox_node') .'/colorbox_node.js');
-  //drupal_add_css(drupal_get_path('module', 'colorbox_node') .'/colorbox_node.css');
   // Setup a global to be used for our dynamic webform inclusion.
   $GLOBALS['colorbox_node_webform'] = FALSE;
   // We need to include our misc/ajax.js function all the time in case
@@ -46,33 +45,34 @@ function colorbox_node_output($path) {
   // @TODO, we should be able to use this for users too,
   // Lets beef this up and make it more intelligent around
   // the system path.
+  $_GET['destination'] = $path;
 
-  // Retrieve our node id from the path.
-  $nid = array_pop(explode('/', $path));
-  // If we have a node, lets display it
-  if ($node = node_load($nid, NULL, TRUE)) {
-    // If this is a webform, lets modifiy it and add
-    // ajax support to keep the webform inside the modal incase
-    // of any error messages.
-    if ($node->type == 'webform') {
-      $GLOBALS['colorbox_node_webform'] = $nid;
+  // Lets determine if this is a webform and add the
+  // nid to dynamically add ajax support.
+  $args = explode('/', $path);
+  if ($args[0] == 'node' && is_numeric($args[1])) {
+    $GLOBALS['colorbox_node_webform'] = $args[1];
+  }
+
+  // Fetch our callback based on our path.
+  $page_callback_result = menu_execute_active_handler($path, FALSE);
+
+  // If the callback is an integer, we have an error, lets
+  // render that out as a command.
+  if (is_int($page_callback_result)) {
+    $commands = ajax_prepare_response($page_callback_result);
+  }
+  else {
+    $commands = array();
+    // Is we have an array, lets assume we need to render it out.
+    if (is_array($page_callback_result)) {
+      $html = drupal_render($page_callback_result);
+      $commands[] = ajax_command_html('#cboxNode', $html);
+    }
+    else {
+      $commands[] = ajax_command_html('#cboxNode', $page_callback_result);
     }
 
-    // We need to fix our destination for contextual links.
-    // This prevents a redirect to a screen with no styles.
-    $_GET['destination'] = drupal_lookup_path('alias', 'node/'. $node->nid);
-
-    // Render the node to a variable to pass on to our commands array.
-    $html = drupal_render(node_view($node));
-
-    // Use our ajax commands to return our page.
-    $commands = array();
-    $commands[] = ajax_command_html('#cboxNode', $html);
-    // Lets add our javascript to fire a colorbox modal to insert
-    // the markup from the #cboxNode container into colorbox.
-    // @TODO:  Add support for providing a width and height through the URL.
-    // @TODO:  Add colorbox module settings back into the colorbox call.
-    
     // Setup our parameters to pass along to our colorbox.
     $params = array();
     $params['inline'] = TRUE;
@@ -93,14 +93,7 @@ function colorbox_node_output($path) {
     </script>';
     $commands[] = ajax_command_html('#cboxNodeJS', $javascript);
   }
-  else {
-    $html = '<h2>'. t('Page Not Found.') .'</h2>';
-    $html .= t('The following page %path was not found.', array('%path' => $path));
-    $commands = array();
-    $commands[] = ajax_command_html('#cboxNode', $html);    
-    // This isn't a node or the node failed to load.
-    watchdog('colorbox_node', t('Failed to load a node while attempting to display it through a colorbox.<br />Node ID: '. $nid));
-  }
+
   // Render our commands out to the browser.
   print ajax_render($commands);
   // Do our end of page tasks.  This is very important if using
@@ -178,12 +171,12 @@ function colorbox_node_webform_js_submit($form, &$form_state) {
       });
     })(jQuery);
   </script>';
-  
+
   // We need a smarter dynamnic resize in case the user doesn't
   // want it to resize automatically.  Or if its a very large form
   // and it would extend past the page.
   $javascript = '';
-  
+
   // If we have a sid, then the form has been successfully submitted.
   // Lets display our confirmation message.
   // @TODO:  Do we want to try and redirect to the URL as well?

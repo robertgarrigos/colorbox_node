@@ -61,9 +61,8 @@ class colorbox_node_handler_field_colorbox_node extends views_handler_field_node
   }
 
   /**
-   * Render whatever the data is as a link to the node.
-   *
-   * Data should be made XSS safe prior to calling this function.
+   * Apply our colorbox-node class and add our widths and heights
+   * to the query params.
    */
   function render_link($data, $values) {
     if (!empty($this->options['link_to_node']) && !empty($this->additional_fields['nid'])) {
