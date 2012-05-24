@@ -73,7 +73,7 @@ function colorbox_node_url_load($arg, $path = array()) {
   array_shift($path);
   
   // Lets determine if we have a prefix from our languages.
-  if(module_exists('locale')) {
+  if(module_exists('locale') && function_exists('language_url_split_prefix')) {
     // Get our language list to pass into our url splitter.
     $languages = language_list();
     // Turn the path into a string so we can then remove our prefix.
