@@ -134,7 +134,7 @@ function colorbox_node_url_load($arg, $path = array()) {
 function colorbox_node_form_alter(&$form, &$form_state, $form_id) {
   // Determine if our webform as been set for display inside a
   // colorbox modal window.
-  if ($GLOBALS['colorbox_node_webform']) {
+  if (isset($GLOBALS['colorbox_node_webform']) && $GLOBALS['colorbox_node_webform']) {
     $webform_id = 'webform_client_form_'. $GLOBALS['colorbox_node_webform'];
     // If we are altering our current webform to be displayed
     // inside a modal box, lets add ajax support.
