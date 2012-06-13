@@ -16,10 +16,6 @@ function colorbox_node_init() {
   // We need to include our misc/ajax.js function all the time in case
   // we are loading up a webform in a colorbox window.
   drupal_add_library('system', 'drupal.ajax');
-  drupal_add_library('system', 'drupal.form');
-  drupal_add_library('system', 'jquery.form');
-  drupal_add_library('system', 'drupal.progress');
-  drupal_add_library('system', 'drupal.textarea');
 }
 
 /*
@@ -31,6 +27,8 @@ function colorbox_node_menu() {
     'page arguments' => array(1),
     'access arguments' => array('access content'),
     'load arguments' => array('%map'),
+    'delivery callback' => 'ajax_deliver',
+    'theme callback' => 'ajax_base_page_theme',
     'type' => MENU_CALLBACK,
   );
   return $items;
@@ -64,6 +62,10 @@ function colorbox_node_output($path) {
   }
   else {
     $commands = array();
+
+    //    $javascript = drupal_add_js(NULL, NULL);
+    //    $commands[] = ajax_command_settings($javascript['settings']['data']);
+
     // Is we have an array, lets assume we need to render it out.
     if (is_array($page_callback_result)) {
       $html = drupal_render($page_callback_result);
@@ -77,6 +79,7 @@ function colorbox_node_output($path) {
     $params = array();
     $params['inline'] = TRUE;
     $params['href'] = '#cboxNode';
+    $params['onClosed'] = 'close';
     if (isset($_GET['width'])) $params['innerWidth'] = $_GET['width'];
     if (isset($_GET['height'])) $params['innerHeight'] = $_GET['height'];
 
@@ -89,16 +92,19 @@ function colorbox_node_output($path) {
           var params = '. $params .';
           $.fn.colorbox($.extend({}, Drupal.settings.colorbox, params));
         });
+        
+        // We need to clear out our html just in case there is
+        // a video with autoplay.
+        $(document).bind("cbox_closed", function() {
+          $("#cboxNode").html("");
+        });
       })(jQuery);
     </script>';
     $commands[] = ajax_command_html('#cboxNodeJS', $javascript);
   }
 
   // Render our commands out to the browser.
-  print ajax_render($commands);
-  // Do our end of page tasks.  This is very important if using
-  // the session for anonymous users.
-  drupal_exit();
+  return array('#type' => 'ajax', '#commands' => $commands);
 }
 
 /*
@@ -142,6 +148,7 @@ function colorbox_node_form_alter(&$form, &$form_state, $form_id) {
       // Add our ajax support for this webform dynamically.
       $form['#prefix'] = '<div id="cboxNodeWrapper">';
       $form['#suffix'] = '</div>';
+      $form['actions']['submit']['#id'] = 'cboxSubmit';
       $form['actions']['submit']['#ajax'] = array(
         'callback' => 'colorbox_node_webform_js_submit',
         'wrapper' => 'cboxNodeWrapper',
@@ -151,6 +158,8 @@ function colorbox_node_form_alter(&$form, &$form_state, $form_id) {
     }
   }
 }
+
+//ajax_get_form();
 
 /*
  * Javascript submit handler for our webform.
@@ -180,7 +189,7 @@ function colorbox_node_webform_js_submit($form, &$form_state) {
   // If we have a sid, then the form has been successfully submitted.
   // Lets display our confirmation message.
   // @TODO:  Do we want to try and redirect to the URL as well?
-  if ($form_state['values']['details']['sid']) {
+  if (!form_get_errors()) {
     $node = node_load($form_state['values']['details']['nid']);
     $confirmation = array(
       '#type' => 'markup',
@@ -189,14 +198,21 @@ function colorbox_node_webform_js_submit($form, &$form_state) {
     return $confirmation;
   }
   else {
-    $form['resize_colorbox'] = array(
-      '#type' => 'markup',
-      '#markup' => $javascript,
-    );
     // We just pass through our $form
     return $form;
   }
 }
+
+/**
+ * Implements hook_entity_info_alter().
+ */
+function colorbox_node_entity_info_alter(&$entity_info) {
+  $entity_info['node']['view modes']['colorbox'] = array(
+    'label' => t('Colorbox'),
+    'custom settings' => TRUE,
+  );
+}
+
 
 /*
  * Implements hook_page_alter().
