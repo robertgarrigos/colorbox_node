@@ -63,9 +63,6 @@ function colorbox_node_output($path) {
   else {
     $commands = array();
 
-    //    $javascript = drupal_add_js(NULL, NULL);
-    //    $commands[] = ajax_command_settings($javascript['settings']['data']);
-
     // Is we have an array, lets assume we need to render it out.
     if (is_array($page_callback_result)) {
       $html = drupal_render($page_callback_result);
@@ -158,8 +155,6 @@ function colorbox_node_form_alter(&$form, &$form_state, $form_id) {
     }
   }
 }
-
-//ajax_get_form();
 
 /*
  * Javascript submit handler for our webform.
