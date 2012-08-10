@@ -76,7 +76,6 @@ function colorbox_node_output($path) {
     $params = array();
     $params['inline'] = TRUE;
     $params['href'] = '#cboxNode';
-    $params['onClosed'] = 'close';
     if (isset($_GET['width'])) $params['innerWidth'] = (int) $_GET['width'];
     if (isset($_GET['height'])) $params['innerHeight'] = (int) $_GET['height'];
 
