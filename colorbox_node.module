@@ -87,8 +87,8 @@ function colorbox_node_output($path) {
     $params = array();
     $params['inline'] = TRUE;
     $params['href'] = '#cboxNode';
-    if (isset($_GET['width'])) $params['innerWidth'] = (int) $_GET['width'];
-    if (isset($_GET['height'])) $params['innerHeight'] = (int) $_GET['height'];
+    if (isset($_GET['width'])) $params['innerWidth'] = colorbox_node_validate_param($_GET['width']);
+    if (isset($_GET['height'])) $params['innerHeight'] = colorbox_node_validate_param($_GET['height']);
 
     $params = json_encode($params);
 
@@ -260,4 +260,17 @@ function colorbox_node_views_api() {
     'api' => 2,
     'path' => drupal_get_path('module', 'colorbox_node') . '/views',
   );
+}
+
+/*
+ * Takes the width or height param and validates its either
+ * a number or a percentage value.  WE do this to prevent any
+ * XSS attacks.
+ */
+function colorbox_node_validate_param($param) {
+  if((substr($param, -1) == '%')) {
+    $param = str_replace('%', '', $param);
+    return (int)$param .'%';
+  }
+  return (int)$param;
 }
