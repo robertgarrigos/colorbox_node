@@ -40,6 +40,7 @@ class colorbox_node_handler_field_colorbox_node extends views_handler_field_node
       '#type' => 'textfield',
       '#title' => t('Colorbox Width'),
       '#default_value' => !empty($this->options['node_in_colorbox_width']) ? $this->options['node_in_colorbox_width'] : '600',
+      '#description' => t("Set a fixed total width. This includes borders and buttons. Example: \"100%\", or 600"),
       '#dependency' => array(
         'edit-options-link-to-node' => array(1),
         'edit-options-node-in-colorbox' => array(1),
@@ -51,6 +52,7 @@ class colorbox_node_handler_field_colorbox_node extends views_handler_field_node
       '#type' => 'textfield',
       '#title' => t('Colorbox Height'),
       '#default_value' => !empty($this->options['node_in_colorbox_height']) ? $this->options['node_in_colorbox_height'] : '600',
+      '#description' => t("Set a fixed total height. This includes borders and buttons. Example: \"100%\", or 600"),
       '#dependency' => array(
         'edit-options-link-to-node' => array(1),
         'edit-options-node-in-colorbox' => array(1),

@@ -65,7 +65,18 @@ function colorbox_node_output($path) {
 
     // Is we have an array, lets assume we need to render it out.
     if (is_array($page_callback_result)) {
-      $html = drupal_render($page_callback_result);
+      // @TODO: Update this to reflect the correct method once this
+      // issue is resolved: http://drupal.org/node/1154382
+      if (isset($page_callback_result['nodes'])) {
+        $html = "";
+        foreach ($page_callback_result['nodes'] as $nid => $tmpNode) {
+          if (isset($tmpNode['#view_mode'])) {
+            $html .= drupal_render(node_view($tmpNode['#node'], 'colorbox'));
+          }
+        }
+      } else {
+        $html = drupal_render($page_callback_result);
+      }
       $commands[] = ajax_command_html('#cboxNode', $html);
     }
     else {
@@ -191,9 +202,8 @@ function colorbox_node_webform_js_submit($form, &$form_state) {
       $markup = check_markup($node->webform['confirmation'], $node->webform['confirmation_format'], '', TRUE) . $javascript;
     }
     elseif($node->webform['redirect_url'] == '<none>') {
-      // Not sure what to do here?
-      // Display confirmation?
-      $markup = '';
+      // Display a confirmation message.
+      $markup = check_markup($node->webform['confirmation'], $node->webform['confirmation_format'], '', TRUE) . $javascript;
     }
     else {
       // We are doing a redirect so we need to close the colorbox
