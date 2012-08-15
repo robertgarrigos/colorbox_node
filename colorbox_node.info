@@ -5,3 +5,5 @@ package = "colorbox"
 dependencies[] = "colorbox"
 files[] = views/colorbox_node_handler_field_colorbox_node.inc
 files[] = views/colorbox_node_handler_field_colorbox_node_link.inc
+scripts[] = colorbox_node.js
+scripts[] = /misc/ajax.js

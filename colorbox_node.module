@@ -7,14 +7,11 @@
  */
 
 /*
- * Implments hook_init().
+ * Implments hook_preprocess_html().
  */
-function colorbox_node_init() {
-  drupal_add_js(drupal_get_path('module', 'colorbox_node') .'/colorbox_node.js');
-  // Setup a global to be used for our dynamic webform inclusion.
-  $GLOBALS['colorbox_node_webform'] = FALSE;
+function colorbox_node_preprocess_html() {
   // We need to include our misc/ajax.js function all the time in case
-  // we are loading up a webform in a colorbox window.
+  // since we are using the built in AJAX Framework
   drupal_add_library('system', 'drupal.ajax');
 }
 
