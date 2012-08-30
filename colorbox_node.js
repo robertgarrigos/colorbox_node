@@ -19,22 +19,40 @@
 				}
 				
 				if(base_path != '/') {
-					var link = pathname.replace(base_path, base_path + 'colorbox/');
+					var link = pathname.replace(base_path, base_path + 'colorbox/') + parse.search;
 				} else {
-					var link = base_path + 'colorbox' + pathname;
+					var link = base_path + 'colorbox' + pathname + parse.search;
 				}
-				// Update our href to the link containing colorbox.
-				$(this).attr('href', link + parse.search);
 				
 				// Bind Ajax behaviors to all items showing the class.
 			    var element_settings = {};
-			    // Clicked links look better with the throbber than the progress bar.
-			    element_settings.progress = { 'type': 'throbber' };
+				
+				// Lets determine if we are showing a loading screen or the throbber.
+				if($(this).hasClass('colorbox-loading')) {
+					// This removes any loading/progress bar on the clicked link
+					// and displays the colorbox loading screen instead.
+					element_settings.progress = { 'type': 'none' };
+					$(this).click(function() {			    	
+						$.colorbox({
+							html:" ", 
+							width: 400, 
+							height: 300,
+							initialWidth: 400,
+							initialHeight: 300,
+							onComplete: function() {
+							  $('#cboxLoadingGraphic, #cboxLoadingOverlay').show();
+							}
+						});
+					});
+				} else {
+					// Clicked links look better with the throbber than the progress bar.
+					element_settings.progress = { 'type': 'throbber' };
+				}
 	
 			    // For anchor tags, these will go to the target of the anchor rather
 			    // than the usual location.
 			    if ($(this).attr('href')) {
-			    	element_settings.url = $(this).attr('href');
+			    	element_settings.url = link;
 			    	element_settings.event = 'click';
 			    }
 			    var base = $(this).attr('id');
