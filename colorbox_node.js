@@ -30,8 +30,11 @@
 		      return p;
 		    };
 		
-		    $('a, area, input', context).filter('.colorbox-node').once('init-colorbox-node-processed', function() {
-				var href = $(this).attr('href');
+		    $('.colorbox-node', context).once('init-colorbox-node-processed', function() {
+		    	var href = $(this).attr('data-href');
+		    	if(typeof href == 'undefined' || href == false) {
+		    		href = $(this).attr('href');
+		    	}
 				// Create an element so we can parse our a URL no matter if its internal or external.
 				var parse = document.createElement('a');
 				parse.href = href;
