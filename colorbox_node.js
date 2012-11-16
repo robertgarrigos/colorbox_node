@@ -3,7 +3,34 @@
 		// Lets find our class name and change our URL to
 		// our defined menu path to open in a colorbox modal.
 		attach : function(context, settings) {
-			$('a.colorbox-node', context).once('colorboxNode').each(function() {
+			$.urlParams = function (url) {
+		      var p = {},
+		          e,
+		          a = /\+/g,  // Regex for replacing addition symbol with a space
+		          r = /([^&=]+)=?([^&]*)/g,
+		          d = function (s) { return decodeURIComponent(s.replace(a, ' ')); },
+		          q = url.split('?');
+		      while (e = r.exec(q[1])) {
+		        e[1] = d(e[1]);
+		        e[2] = d(e[2]);
+		        switch (e[2].toLowerCase()) {
+		          case 'true':
+		          case 'yes':
+		            e[2] = true;
+		            break;
+		          case 'false':
+		          case 'no':
+		            e[2] = false;
+		            break;
+		        }
+		        if (e[1] == 'width') { e[1] = 'innerWidth'; }
+		        if (e[1] == 'height') { e[1] = 'innerHeight'; }
+		        p[e[1]] = e[2];
+		      }
+		      return p;
+		    };
+		
+		    $('a, area, input', context).filter('.colorbox-node').once('init-colorbox-node-processed', function() {
 				var href = $(this).attr('href');
 				// Create an element so we can parse our a URL no matter if its internal or external.
 				var parse = document.createElement('a');
@@ -27,27 +54,14 @@
 				// Bind Ajax behaviors to all items showing the class.
 			    var element_settings = {};
 				
-				// Lets determine if we are showing a loading screen or the throbber.
-				if($(this).hasClass('colorbox-loading')) {
-					// This removes any loading/progress bar on the clicked link
-					// and displays the colorbox loading screen instead.
-					element_settings.progress = { 'type': 'none' };
-					$(this).click(function() {			    	
-						$.colorbox({
-							html:" ", 
-							width: 400, 
-							height: 300,
-							initialWidth: 400,
-							initialHeight: 300,
-							onComplete: function() {
-							  $('#cboxLoadingGraphic, #cboxLoadingOverlay').show();
-							}
-						});
-					});
-				} else {
-					// Clicked links look better with the throbber than the progress bar.
-					element_settings.progress = { 'type': 'throbber' };
-				}
+			    // This removes any loading/progress bar on the clicked link
+				// and displays the colorbox loading screen instead.
+				element_settings.progress = { 'type': 'none' };
+				$(this).click(function() {
+					var params = $.urlParams($(this).attr('href'));
+					params.html = 'Loading...';
+			        $.colorbox($.extend({}, settings.colorbox, params));
+				});
 	
 			    // For anchor tags, these will go to the target of the anchor rather
 			    // than the usual location.
