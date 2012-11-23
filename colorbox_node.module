@@ -193,6 +193,7 @@ function colorbox_node_webform_js_submit($form, &$form_state) {
 function colorbox_node_entity_info_alter(&$entity_info) {
   $entity_info['node']['view modes']['colorbox'] = array(
     'label' => t('Colorbox'),
+    'custom settings' => FALSE,
   );
 }
 
