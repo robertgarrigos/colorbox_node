@@ -40,7 +40,7 @@ function colorbox_node_output($path) {
   // @TODO, we should be able to use this for users too,
   // Lets beef this up and make it more intelligent around
   // the system path.
-  $_GET['destination'] = $path;
+  if(!isset($_GET['destination'])) $_GET['destination'] = $path;
 
   // Lets determine if this is a webform and add the
   // nid to dynamically add ajax support.
