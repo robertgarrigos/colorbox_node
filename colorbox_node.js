@@ -62,7 +62,7 @@
 				element_settings.progress = { 'type': 'none' };
 				$(this).click(function() {
 					var params = $.urlParams($(this).attr('href'));
-					params.html = 'Loading...';
+					params.html = '<div id="colorboxNodeLoading"></div>';
 			        $.colorbox($.extend({}, settings.colorbox, params));
 				});
 	
