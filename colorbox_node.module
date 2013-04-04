@@ -66,6 +66,9 @@ function colorbox_node_output($path) {
           if (isset($tmpNode['#view_mode'])) {
             $node_view = $tmpNode['#node'];
             $node_view_array = node_view($node_view, 'colorbox');
+            if (module_exists('comment')) {
+              $node_view_array['comments'] = comment_node_page_additions($node_view);
+            }
             $rendered_node = drupal_render($node_view_array);
             $page_callback_result['nodes'][$nid] = array('#markup' => $rendered_node);
           }
