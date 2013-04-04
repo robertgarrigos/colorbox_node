@@ -36,7 +36,7 @@ function colorbox_node_menu() {
  * Takes the path as our argument and from that we
  * will determine the internal path and node id.
  */
-function colorbox_node_output($path) {
+function colorbox_node_output($path) {git 
   // @TODO, we should be able to use this for users too,
   // Lets beef this up and make it more intelligent around
   // the system path.
