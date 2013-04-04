@@ -42,15 +42,11 @@ function colorbox_node_output($path) {
   // the system path.
   if(!isset($_GET['destination'])) $_GET['destination'] = $path;
 
-  // Lets determine if this is a webform and add the
-  // nid to dynamically add ajax support.
-  $args = explode('/', $path);
-  if ($args[0] == 'node' && is_numeric($args[1])) {
-    $GLOBALS['colorbox_node_webform'] = $args[1];
-  }
-
   // Fetch our callback based on our path.
   $page_callback_result = menu_execute_active_handler($path, FALSE);
+
+  // Allow other modules to alter the colorbox content.
+  drupal_alter('colorbox_node_page_callback_result', $page_callback_result);
 
   // If the callback is an integer, we have an error, lets
   // render that out as a command.
@@ -69,12 +65,13 @@ function colorbox_node_output($path) {
         foreach ($page_callback_result['nodes'] as $nid => $tmpNode) {
           if (isset($tmpNode['#view_mode'])) {
             $node_view = $tmpNode['#node'];
-            $html .= drupal_render(node_view($node_view, 'colorbox'));
+            $node_view_array = node_view($node_view, 'colorbox');
+            $rendered_node = drupal_render($node_view_array);
+            $page_callback_result['nodes'][$nid] = array('#markup' => $rendered_node);
           }
         }
-      } else {
-        $html = drupal_render($page_callback_result);
       }
+      $html = drupal_render($page_callback_result);
       $commands[] = ajax_command_html('#cboxLoadedContent', $html);
     }
     else {
@@ -113,80 +110,6 @@ function colorbox_node_url_load($arg, $path = array()) {
   return drupal_get_normal_path(implode('/', $path));
 }
 
-/*
- * Implements hook_form_alter().
- */
-function colorbox_node_form_alter(&$form, &$form_state, $form_id) {
-  // Determine if our webform as been set for display inside a
-  // colorbox modal window.
-  if (isset($GLOBALS['colorbox_node_webform']) && $GLOBALS['colorbox_node_webform']) {
-    $webform_id = 'webform_client_form_'. $GLOBALS['colorbox_node_webform'];
-    // If we are altering our current webform to be displayed
-    // inside a modal box, lets add ajax support.
-    if ($form_id == $webform_id) {
-      // Add our ajax support for this webform dynamically.
-      $form['#prefix'] = '<div id="cboxNodeWrapper">';
-      $form['#suffix'] = '</div>';
-      $form['actions']['submit']['#id'] = 'cboxSubmit';
-      $form['actions']['submit']['#ajax'] = array(
-        'callback' => 'colorbox_node_webform_js_submit',
-        'wrapper' => 'cboxNodeWrapper',
-        'method' => 'replace',
-        'effect' => 'fade',
-      );
-    }
-  }
-}
-
-/*
- * Javascript submit handler for our webform.
- */
-function colorbox_node_webform_js_submit($form, &$form_state) {
-  // If we have a sid, then the form has been successfully submitted.
-  // Lets display our confirmation message.
-  if (!form_get_errors()) {
-    $node = node_load($form_state['values']['details']['nid']);
-
-    // Find out what we should be doing for the webform.
-    if($node->webform['redirect_url'] == '<confirmation>' || $node->webform['redirect_url'] == '<none>') {
-      // Display a confirmation message.
-      $markup = theme(array('webform_confirmation_' . $node->nid, 'webform_confirmation'), array('node' => $node));
-    }
-    else {
-      $path = $form_state['redirect'][0];
-      $options = $form_state['redirect'][1];
-      
-      drupal_alter('drupal_goto', $path, $options);
-    
-      // The 'Location' HTTP header must be absolute.
-      $options['absolute'] = TRUE;
-    
-      $url = url($path, $options);
-      // We are doing a redirect so we need to close the colorbox
-      // and then force a window.location on the passed in URL.
-      $markup = '
-      <script type="text/javascript">
-        (function ($) {
-          $(document).ready(function() {
-            $.fn.colorbox.close();
-            window.location = "'. $url .'";
-          });
-        })(jQuery);
-      </script>';
-    }
-    // Return our markup.
-    $confirmation = array(
-      '#type' => 'markup',
-      '#markup' => $markup,
-    );
-    return $confirmation;
-  }
-  else {
-    // We just pass through our $form
-    return $form;
-  }
-}
-
 /**
  * Implements hook_entity_info_alter().
  */
@@ -196,7 +119,6 @@ function colorbox_node_entity_info_alter(&$entity_info) {
     'custom settings' => FALSE,
   );
 }
-
 
 /**
  * Implements hook_views_api().
