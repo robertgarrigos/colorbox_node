@@ -61,7 +61,6 @@ function colorbox_node_output($path) {
       // @TODO: Update this to reflect the correct method once this
       // issue is resolved: http://drupal.org/node/1154382
       if (isset($page_callback_result['nodes'])) {
-        $html = "";
         foreach ($page_callback_result['nodes'] as $nid => $tmpNode) {
           if (isset($tmpNode['#view_mode'])) {
             $node_view = $tmpNode['#node'];
