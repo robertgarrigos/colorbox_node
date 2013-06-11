@@ -13,6 +13,7 @@ function colorbox_node_preprocess_html() {
   // We need to include our misc/ajax.js function all the time in case
   // since we are using the built in AJAX Framework
   drupal_add_library('system', 'drupal.ajax');
+  drupal_add_js(drupal_get_path('module', 'colorbox_node') . '/colorbox_node.js', array('type' => 'file', 'weight' => 10));
 }
 
 /*
@@ -42,6 +43,13 @@ function colorbox_node_output($path) {
   // the system path.
   if(!isset($_GET['destination'])) $_GET['destination'] = $path;
 
+  // Lets include our context execution.
+  if (module_exists('context')) {
+    if ($plugin = context_get_plugin('condition', 'colorbox_node')) {
+      $plugin->execute('view');
+    }
+  }
+
   // Fetch our callback based on our path.
   $page_callback_result = menu_execute_active_handler($path, FALSE);
 
@@ -55,7 +63,6 @@ function colorbox_node_output($path) {
   }
   else {
     $commands = array();
-
     // Is we have an array, lets assume we need to render it out.
     if (is_array($page_callback_result)) {
       // @TODO: Update this to reflect the correct method once this
@@ -129,5 +136,36 @@ function colorbox_node_views_api() {
   return array(
     'api' => 2,
     'path' => drupal_get_path('module', 'colorbox_node') . '/views',
+  );
+}
+
+/**
+ * Implements hook_context_plugins().
+ */
+function colorbox_node_context_plugins() {
+  $plugins = array();
+  $plugins['colorbox_node_context_condition'] = array(
+    'handler' => array(
+      'path' => drupal_get_path('module', 'colorbox_node'),
+      'file' => 'colorbox_node.context.inc',
+      'class' => 'colorbox_node_context_condition',
+      'parent' => 'context_condition',
+    ),
+  );
+  return $plugins;
+}
+
+/**
+ * Implements hook_context_registry().
+ */
+function colorbox_node_context_registry() {
+  return array(
+    'conditions' => array(
+      'colorbox_node' => array(
+        'title' => t('Colorbox Modal'),
+        'description' => t('Set this context based on if you are viewing your content inside a colorbox modal.'),
+        'plugin' => 'colorbox_node_context_condition',
+      ),
+    ),
   );
 }
