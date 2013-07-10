@@ -62,6 +62,7 @@ function colorbox_node_output($path) {
   // Lets beef this up and make it more intelligent around
   // the system path.
   if(!isset($_GET['destination'])) $_GET['destination'] = $path;
+  $_GET['q'] = $path;
 
   // Fetch our callback based on our path.
   $page_callback_result = menu_execute_active_handler($path, FALSE);
