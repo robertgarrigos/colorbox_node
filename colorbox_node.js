@@ -61,11 +61,22 @@
 
         $(this).click(function () {
             $this = $(this);
-            var params = $.urlParams(href);
+
+            // Lets extract our width and height giving priority to the data attributes.
+            var innerWidth = $this.data('inner_width');
+            var innerHeight = $this.data('inner_height');
+            if (typeof innerWidth != 'undefined' && typeof innerHeight != 'undefined') {
+                var params = $.urlDataParams(innerWidth, innerHeight);
+            } else {
+                var params = $.urlParams(href);
+            }
+
             params.html = '<div id="colorboxNodeLoading"></div>';
             params.onComplete = function () {
                 $this.colorboxNodeGroup();
             }
+
+            // Launch our colorbox with the provided settings
             $.colorbox($.extend({}, Drupal.settings.colorbox, params));
         });
 
@@ -143,6 +154,11 @@
             p[e[1]] = e[2];
         }
         return p;
+    };
+
+    // Utility function to return our data attributes for width/height
+    $.urlDataParams = function (innerWidth, innerHeight) {
+        return {'innerWidth':innerWidth,'innerHeight':innerHeight};
     };
 
 })(jQuery);
