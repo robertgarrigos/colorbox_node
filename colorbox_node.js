@@ -63,8 +63,8 @@
             $this = $(this);
 
             // Lets extract our width and height giving priority to the data attributes.
-            var innerWidth = $this.data('inner_width');
-            var innerHeight = $this.data('inner_height');
+            var innerWidth = $this.data('inner-width');
+            var innerHeight = $this.data('inner-height');
             if (typeof innerWidth != 'undefined' && typeof innerHeight != 'undefined') {
                 var params = $.urlDataParams(innerWidth, innerHeight);
             } else {
