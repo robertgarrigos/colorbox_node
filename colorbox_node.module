@@ -58,10 +58,12 @@ function colorbox_node_form_alter(&$form, &$form_state, $form_id) {
  * will determine the internal path and node id.
  */
 function colorbox_node_output($path) {
-  // @TODO, we should be able to use this for users too,
   // Lets beef this up and make it more intelligent around
   // the system path.
-  if(!isset($_GET['destination'])) $_GET['destination'] = $path;
+  if(!isset($_GET['destination'])) {
+    $_GET['destination'] = $path;
+  }
+  drupal_static('colorbox_original_q', $_GET['q']);
   $_GET['q'] = $path;
 
   // Fetch our callback based on our path.
@@ -77,8 +79,6 @@ function colorbox_node_output($path) {
   $commands = array();
   // Is we have an array, lets assume we need to render it out.
   if (is_array($page_callback_result)) {
-    // @TODO: Update this to reflect the correct method once this
-    // issue is resolved: http://drupal.org/node/1154382
     if (isset($page_callback_result['nodes'])) {
       foreach ($page_callback_result['nodes'] as $nid => $tmpNode) {
         if (isset($tmpNode['#view_mode'])) {
@@ -199,4 +199,22 @@ function colorbox_node_context_registry() {
       ),
     ),
   );
+}
+
+/**
+ * Implement hook_ctools_plugin_api()
+ */
+function colorbox_node_ctools_plugin_api($module, $api) {
+  if ($module == 'page_manager') {
+    return array('version' => 2);
+  }
+}
+
+/**
+ * Implement hook_ctools_plugin_directory()
+ */
+function colorbox_node_ctools_plugin_directory($module, $plugin) {
+  if ($module == 'page_manager' || $module == 'ctools') {
+    return 'ctools/plugins/' . $plugin;
+  }
 }
