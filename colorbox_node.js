@@ -102,6 +102,7 @@
         if ($('a[rel="' + rel + '"]:not("#colorbox a[rel="' + rel + '"]")').length > 1) {
             $related = $('a[rel="' + rel + '"]:not("#colorbox a[rel="' + rel + '"]")');
             var idx = $related.index($(this));
+            var tot = $related.length;
 
             // Show our gallery buttons
             $('#cboxPrevious, #cboxNext').show();
@@ -114,6 +115,28 @@
                 index = getIndex(-1);
                 $related[index].click();
             };
+
+            // Setup our current HTML
+            $('#cboxCurrent').html(Drupal.settings.colorbox.current.replace('{current}', idx + 1).replace('{total}', tot)).show();
+
+            var prefix = 'colorbox';
+            // Remove Bindings and re-add
+            // @TODO: There must be a better way?  If we don't remove it causes a memory to be exhausted.
+            $(document).unbind('keydown.' + prefix);
+
+            // Add Key Bindings
+            $(document).bind('keydown.' + prefix, function (e) {
+                var key = e.keyCode;
+                if ($related[1] && !e.altKey) {
+                    if (key === 37) {
+                        e.preventDefault();
+                        $.colorbox.prev();
+                    } else if (key === 39) {
+                        e.preventDefault();
+                        $.colorbox.next();
+                    }
+                }
+            });
         }
 
         function getIndex(increment) {
