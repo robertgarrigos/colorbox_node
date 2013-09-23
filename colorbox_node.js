@@ -75,9 +75,10 @@
             params.onComplete = function () {
                 $this.colorboxNodeGroup();
             }
+            params.open = true;
 
             // Launch our colorbox with the provided settings
-            $.colorbox($.extend({}, Drupal.settings.colorbox, params));
+            $(this).colorbox($.extend({}, Drupal.settings.colorbox, params));
         });
 
         // Log our click handler to our ajax object
