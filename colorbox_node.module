@@ -218,3 +218,27 @@ function colorbox_node_ctools_plugin_directory($module, $plugin) {
     return 'ctools/plugins/' . $plugin;
   }
 }
+
+/**
+ * Implements hook_menu_attribute_info().
+ */
+function colorbox_node_menu_attribute_info() {
+  // Add a data-inner-width attribute.
+  $attributes['data-inner-width'] = array(
+    'label' => t('Data-Inner-Width (px)'),
+    'description' => t('Specifies the inner width used by colorbox.'),
+    'form' => array(
+      '#size' => 5,
+    ),
+  );
+
+  // Add a data-inner-width attribute.
+  $attributes['data-inner-height'] = array(
+    'label' => t('Data-Inner-Height (px)'),
+    'description' => t('Specifies the inner height used by colorbox.'),
+    'form' => array(
+      '#size' => 5,
+    ),
+  );
+  return $attributes;
+}

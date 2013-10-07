@@ -3,6 +3,22 @@
         // Lets find our class name and change our URL to
         // our defined menu path to open in a colorbox modal.
         attach: function (context, settings) {
+            // Make sure colorbox exists.
+            if (!$.isFunction($.colorbox)) {
+                return;
+            }
+
+            // Mobile detection extracted from the colorbox module.
+            // If the mobile setting is turned on, it will turn off the colorbox modal for mobile devices.
+            if (settings.colorbox.mobiledetect && window.matchMedia) {
+                // Disable Colorbox for small screens.
+                mq = window.matchMedia("(max-device-width: " + settings.colorbox.mobiledevicewidth + ")");
+                if (mq.matches) {
+                    return;
+                }
+            }
+
+
             $('.colorbox-node', context).once('init-colorbox-node-processed', function () {
                 $(this).colorboxNode({'launch': false});
             });
@@ -97,52 +113,54 @@
     // and manually force a click on the link to call that AJAX and update the
     // modal window.
     $.fn.colorboxNodeGroup = function () {
-        // Lets do something wonky with galleries.
-        var rel = $(this).attr('rel');
-        if ($('a[rel="' + rel + '"]:not("#colorbox a[rel="' + rel + '"]")').length > 1) {
-            $related = $('a[rel="' + rel + '"]:not("#colorbox a[rel="' + rel + '"]")');
-            var idx = $related.index($(this));
-            var tot = $related.length;
+        // Lets do setup our gallery type of functions.
+        if($(this).attr('rel')) {
+            var rel = $(this).attr('rel');
+            if ($('a[rel="' + rel + '"]:not("#colorbox a[rel="' + rel + '"]")').length > 1) {
+                $related = $('a[rel="' + rel + '"]:not("#colorbox a[rel="' + rel + '"]")');
+                var idx = $related.index($(this));
+                var tot = $related.length;
 
-            // Show our gallery buttons
-            $('#cboxPrevious, #cboxNext').show();
-            $.colorbox.next = function () {
-                index = getIndex(1);
-                $related[index].click();
+                // Show our gallery buttons
+                $('#cboxPrevious, #cboxNext').show();
+                $.colorbox.next = function () {
+                    index = getIndex(1);
+                    $related[index].click();
 
-            };
-            $.colorbox.prev = function () {
-                index = getIndex(-1);
-                $related[index].click();
-            };
+                };
+                $.colorbox.prev = function () {
+                    index = getIndex(-1);
+                    $related[index].click();
+                };
 
-            // Setup our current HTML
-            $('#cboxCurrent').html(Drupal.settings.colorbox.current.replace('{current}', idx + 1).replace('{total}', tot)).show();
+                // Setup our current HTML
+                $('#cboxCurrent').html(Drupal.settings.colorbox.current.replace('{current}', idx + 1).replace('{total}', tot)).show();
 
-            var prefix = 'colorbox';
-            // Remove Bindings and re-add
-            // @TODO: There must be a better way?  If we don't remove it causes a memory to be exhausted.
-            $(document).unbind('keydown.' + prefix);
+                var prefix = 'colorbox';
+                // Remove Bindings and re-add
+                // @TODO: There must be a better way?  If we don't remove it causes a memory to be exhausted.
+                $(document).unbind('keydown.' + prefix);
 
-            // Add Key Bindings
-            $(document).bind('keydown.' + prefix, function (e) {
-                var key = e.keyCode;
-                if ($related[1] && !e.altKey) {
-                    if (key === 37) {
-                        e.preventDefault();
-                        $.colorbox.prev();
-                    } else if (key === 39) {
-                        e.preventDefault();
-                        $.colorbox.next();
+                // Add Key Bindings
+                $(document).bind('keydown.' + prefix, function (e) {
+                    var key = e.keyCode;
+                    if ($related[1] && !e.altKey) {
+                        if (key === 37) {
+                            e.preventDefault();
+                            $.colorbox.prev();
+                        } else if (key === 39) {
+                            e.preventDefault();
+                            $.colorbox.next();
+                        }
                     }
-                }
-            });
-        }
+                });
+            }
 
-        function getIndex(increment) {
-            var max = $related.length;
-            var newIndex = (idx + increment) % max;
-            return (newIndex < 0) ? max + newIndex : newIndex;
+            function getIndex(increment) {
+                var max = $related.length;
+                var newIndex = (idx + increment) % max;
+                return (newIndex < 0) ? max + newIndex : newIndex;
+            }
         }
     }
 
