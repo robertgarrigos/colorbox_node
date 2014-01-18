@@ -56,10 +56,21 @@
             pathname = '/' + parse.pathname;
         }
 
+        // If clean URL's are not turned on, lets check for that.
+        var url = parse.search.replace('?q=','');
+
         if (base_path != '/') {
-            var link = pathname.replace(base_path, base_path + 'colorbox/') + parse.search;
+            if (url != '') {
+                var link = pathname.replace(base_path, base_path + '?q=colorbox/') + url;
+            } else {
+                var link = pathname.replace(base_path, base_path + 'colorbox/') + parse.search;
+            }
         } else {
-            var link = base_path + 'colorbox' + pathname + parse.search;
+            if (url != '') {
+                var link = base_path + '?q=colorbox' + pathname + url;
+            } else {
+                var link = base_path + 'colorbox' + pathname + parse.search;
+            }
         }
 
         // Bind Ajax behaviors to all items showing the class.
@@ -76,7 +87,12 @@
         }
 
         $(this).click(function () {
-            $this = $(this);
+            $this = $(this).clone();
+
+            // Clear out the rel to prevent any confusion if not using the gallery class.
+            if(!$this.hasClass('colorbox-node-gallery')) {
+                $this.attr('rel', '');
+            }
 
             // Lets extract our width and height giving priority to the data attributes.
             var innerWidth = $this.data('inner-width');
@@ -94,7 +110,7 @@
             params.open = true;
 
             // Launch our colorbox with the provided settings
-            $(this).colorbox($.extend({}, Drupal.settings.colorbox, params));
+            $this.colorbox($.extend({}, Drupal.settings.colorbox, params));
         });
 
         // Log our click handler to our ajax object
@@ -114,11 +130,25 @@
     // modal window.
     $.fn.colorboxNodeGroup = function () {
         // Lets do setup our gallery type of functions.
-        if($(this).attr('rel')) {
-            var rel = $(this).attr('rel');
-            if ($('a[rel="' + rel + '"]:not("#colorbox a[rel="' + rel + '"]")').length > 1) {
-                $related = $('a[rel="' + rel + '"]:not("#colorbox a[rel="' + rel + '"]")');
-                var idx = $related.index($(this));
+        var $this = $(this);
+        var rel = $this.attr('rel');
+        if(rel && $this.hasClass('colorbox-node-gallery')) {
+            if ($('a.colorbox-node-gallery[rel="' + rel + '"]:not("#colorbox a[rel="' + rel + '"]")').length > 1) {
+                $related = $('a.colorbox-node-gallery[rel="' + rel + '"]:not("#colorbox a[rel="' + rel + '"]")');
+
+                // filter $related array by href, to have mutliple colorbox links to the same target
+                // appear as one item in the gallery only
+                var $related_unique = [];
+                $related.each(function() {
+                  findHref($related_unique, this.href);
+                  if (!findHref($related_unique, this.href).length) {
+                    $related_unique.push(this);
+                  }
+                });
+                // we have to get the actual used element from the filtered list in order to get it's relative index
+                var current = findHref($related_unique, $this.get(0).href);
+                $related = $($related_unique);
+                var idx = $related.index($(current));
                 var tot = $related.length;
 
                 // Show our gallery buttons
@@ -126,7 +156,6 @@
                 $.colorbox.next = function () {
                     index = getIndex(1);
                     $related[index].click();
-
                 };
                 $.colorbox.prev = function () {
                     index = getIndex(-1);
@@ -161,6 +190,13 @@
                 var newIndex = (idx + increment) % max;
                 return (newIndex < 0) ? max + newIndex : newIndex;
             }
+
+            // Find a colorbox link by href in an array
+            function findHref(items, href){
+              return $.grep(items, function(n, i){
+                return n.href == href;
+              });
+            };
         }
     }
 

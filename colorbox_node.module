@@ -242,3 +242,120 @@ function colorbox_node_menu_attribute_info() {
   );
   return $attributes;
 }
+
+
+/*
+ * Implements hook_field_formatter_info_alter().
+ */
+function colorbox_node_field_formatter_info_alter(&$info) {
+  if(isset($info['entityreference_label'])) {
+    $info['entityreference_label']['module'] = 'colorbox_node';
+  }
+}
+
+/**
+ * Implements hook_field_formatter_settings_form().
+ */
+function colorbox_node_field_formatter_settings_form($field, $instance, $view_mode, $form, &$form_state) {
+  $display = $instance['display'][$view_mode];
+  $settings = $display['settings'];
+
+  // Integration with the entityreference module
+  if ($display['type'] == 'entityreference_label') {
+    // Get our defaults.
+    $element = entityreference_field_formatter_settings_form($field, $instance, $view_mode, $form, $form_state);
+    $element['colorbox_node_link'] = array(
+      '#title' => t('Open in a Colorbox'),
+      '#type' => 'checkbox',
+      '#default_value' => $settings['colorbox_node_link'],
+      '#dependency' => array(
+        'edit-fields-field-reference-settings-edit-form-settings-link' => array(1),
+      ),
+    );
+    $element['colorbox_node_width'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Colorbox Width'),
+      '#default_value' => !empty($settings['colorbox_node_width']) ? $settings['colorbox_node_width'] : '600',
+      '#dependency' => array(
+        'edit-fields-field-reference-settings-edit-form-settings-colorbox-node-link' => array(1),
+      ),
+      '#dependency_count' => 1,
+      '#weight' => 1,
+    );
+    $element['colorbox_node_height'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Colorbox Height'),
+      '#default_value' => !empty($settings['colorbox_node_height']) ? $settings['colorbox_node_height'] : '600',
+      '#dependency' => array(
+        'edit-fields-field-reference-settings-edit-form-settings-colorbox-node-link' => array(1),
+      ),
+      '#dependency_count' => 1,
+      '#weight' => 2,
+    );
+  }
+
+  return $element;
+}
+
+/**
+ * Implements hook_field_formatter_settings_summary().
+ */
+function colorbox_node_field_formatter_settings_summary($field, $instance, $view_mode) {
+  $display = $instance['display'][$view_mode];
+  $settings = $display['settings'];
+
+  $summary = array();
+
+  if ($display['type'] == 'entityreference_label') {
+    // Get our defaults.
+    $summary[] = entityreference_field_formatter_settings_summary($field, $instance, $view_mode);
+  }
+
+  return implode('<br />', $summary);
+}
+
+/**
+ * Implements hook_field_formatter_prepare_view().
+ */
+function colorbox_node_field_formatter_prepare_view($entity_type, $entities, $field, $instances, $langcode, &$items, $displays) {
+  entityreference_field_formatter_prepare_view($entity_type, $entities, $field, $instances, $langcode, $items, $displays);
+}
+
+/**
+ * Implements hook_field_formatter_view().
+ */
+function colorbox_node_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
+  $result = array();
+  $settings = $display['settings'];
+
+  // Rebuild the items list to contain only those with access.
+  foreach ($items as $key => $item) {
+    if (empty($item['access'])) {
+      unset($items[$key]);
+    }
+  }
+
+  switch ($display['type']) {
+    case 'entityreference_label':
+      if(isset($settings['colorbox_node_link']) && $settings['colorbox_node_link']) {
+        $handler = entityreference_get_selection_handler($field, $instance, $entity_type, $entity);
+        foreach ($items as $delta => $item) {
+          $label = $handler->getLabel($item['entity']);
+          // If the link is to be displayed and the entity has a uri, display a link.
+          // Note the assignment ($url = ) here is intended to be an assignment.
+          if ($display['settings']['link'] && ($uri = entity_uri($field['settings']['target_type'], $item['entity']))) {
+            $uri['options']['attributes'] = array('class' => 'colorbox-node', 'data-inner-width' => $settings['colorbox_node_width'], 'data-inner-height' => $settings['colorbox_node_height']);
+            $result[$delta] = array('#markup' => l($label, $uri['path'], $uri['options']));
+          }
+          else {
+            $result[$delta] = array('#markup' => check_plain($label));
+          }
+        }
+      }
+      else {
+        $result = entityreference_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display);
+      }
+      break;
+  }
+  return $result;
+}
