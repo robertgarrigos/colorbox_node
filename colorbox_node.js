@@ -57,12 +57,12 @@
         }
 
         // If clean URL's are not turned on, lets check for that.
-        var url = parse.search.replace('?q=','');
-
+        var url = $.getParameterByName('q', href);
         if (base_path != '/') {
             if (url != '') {
                 var link = pathname.replace(base_path, base_path + '?q=colorbox/') + url;
             } else {
+                console.log('check2');
                 var link = pathname.replace(base_path, base_path + 'colorbox/') + parse.search;
             }
         } else {
@@ -140,10 +140,10 @@
                 // appear as one item in the gallery only
                 var $related_unique = [];
                 $related.each(function() {
-                  findHref($related_unique, this.href);
-                  if (!findHref($related_unique, this.href).length) {
-                    $related_unique.push(this);
-                  }
+                    findHref($related_unique, this.href);
+                    if (!findHref($related_unique, this.href).length) {
+                        $related_unique.push(this);
+                    }
                 });
                 // we have to get the actual used element from the filtered list in order to get it's relative index
                 var current = findHref($related_unique, $this.get(0).href);
@@ -193,9 +193,9 @@
 
             // Find a colorbox link by href in an array
             function findHref(items, href){
-              return $.grep(items, function(n, i){
-                return n.href == href;
-              });
+                return $.grep(items, function(n, i){
+                    return n.href == href;
+                });
             };
         }
     }
@@ -238,5 +238,16 @@
     $.urlDataParams = function (innerWidth, innerHeight) {
         return {'innerWidth':innerWidth,'innerHeight':innerHeight};
     };
+
+    $.getParameterByName = function(name, href) {
+        name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+        var regexString = "[\\?&]" + name + "=([^&#]*)";
+        var regex = new RegExp(regexString);
+        var found = regex.exec(href);
+        if(found == null)
+            return "";
+        else
+            return decodeURIComponent(found[1].replace(/\+/g, " "));
+    }
 
 })(jQuery);
