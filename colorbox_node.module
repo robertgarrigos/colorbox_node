@@ -333,7 +333,7 @@ function colorbox_node_field_attach_view_alter(&$output, $context) {
     $settings = $display['settings'];
 
     // If we are not linking as a colorbox, then just continue on.
-    if(!isset($settings['colorbox_node_link'])) {
+    if(!isset($settings['colorbox_node_link']) || !$settings['colorbox_node_link']) {
       continue;
     }
 
