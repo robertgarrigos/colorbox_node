@@ -14,6 +14,16 @@ function colorbox_node_preprocess_html() {
   // since we are using the built in AJAX Framework
   drupal_add_library('system', 'drupal.ajax');
   drupal_add_js(drupal_get_path('module', 'colorbox_node') . '/colorbox_node.js', array('type' => 'file', 'weight' => 10));
+
+  $js_settings = array(
+    'width' => variable_get('colorbox_node_width', '600px'),
+    'height' => variable_get('colorbox_node_height', '600px'),
+  );
+
+  // Allow other modules to add or change the default settings.
+  drupal_alter('colorbox_node_settings', $js_settings);
+  drupal_add_js(array('colorbox_node' => $js_settings), array('type' => 'setting', 'scope' => JS_DEFAULT));
+
 }
 
 /*
@@ -47,6 +57,18 @@ function colorbox_node_form_alter(&$form, &$form_state, $form_id) {
         '#title' => t('Enable Regions'),
         '#description' => t('This enables regions to be rendered inside the colorbox modal.  The context module can further target a colorbox modal.'),
         '#default_value' => variable_get('colorbox_node_regions', FALSE),
+      );
+      $form['colorbox_node']['colorbox_node_width'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Default Width'),
+        '#description' => t('Default width of the colorbox loaded window.  You must include the \'px\' or \'%\' suffix with your numeric value.'),
+        '#default_value' => variable_get('colorbox_node_width', '600px'),
+      );
+      $form['colorbox_node']['colorbox_node_height'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Default Height'),
+        '#description' => t('Default height of the colorbox loaded window.  You must include the \'px\' or \'%\' suffix with your numeric value.'),
+        '#default_value' => variable_get('colorbox_node_height', '600px'),
       );
       break;
   }
