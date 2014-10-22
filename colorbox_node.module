@@ -10,6 +10,10 @@
  * Implments hook_preprocess_html().
  */
 function colorbox_node_preprocess_html() {
+  // check to see if colorbox should be active.
+  if (!_colorbox_active()) {
+    return; // Don't add the JavaScript and CSS on specified paths.
+  }
   // We need to include our misc/ajax.js function all the time in case
   // since we are using the built in AJAX Framework
   drupal_add_library('system', 'drupal.ajax');
