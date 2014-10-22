@@ -5,6 +5,7 @@
         attach: function (context, settings) {
             // Make sure colorbox exists.
             if (!$.isFunction($.colorbox)) {
+                alert(Drupal.t('Colorbox Library is not loaded.'));
                 return;
             }
 
@@ -50,7 +51,7 @@
         parse.href = href;
 
         if(!href) {
-            alert(Drupal.t('No url found on element'))
+            alert(Drupal.t('No url found on element'));
         }
 
         // Lets add our colorbox link after the base path if necessary.
