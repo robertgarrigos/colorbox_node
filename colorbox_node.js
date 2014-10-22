@@ -93,7 +93,7 @@
         }
 
         $(this).click(function () {
-            $this = $(this).clone();
+            var $this = $(this).clone();
 
             // Clear out the rel to prevent any confusion if not using the gallery class.
             if(!$this.hasClass('colorbox-node-gallery')) {
