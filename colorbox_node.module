@@ -290,8 +290,6 @@ function colorbox_node_field_formatter_settings_form_alter(&$settings_form, $con
     $display = $context['instance']['display'][$context['view_mode']];
     $settings = $display['settings'];
 
-    dsm($settings_form);
-
     $settings_form['colorbox_node_link'] = array(
       '#title' => t('Open in a Colorbox'),
       '#type' => 'checkbox',
