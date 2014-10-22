@@ -176,7 +176,7 @@
                 // Setup our current HTML
                 $('#cboxCurrent').html(Drupal.settings.colorbox.current.replace('{current}', idx + 1).replace('{total}', tot)).show();
                 $('#cboxNext').html(Drupal.settings.colorbox.next).show();
-                $('#cboxPrevious').html(Drupal.settings.colorbox.prev).show();
+                $('#cboxPrevious').html(Drupal.settings.colorbox.previous).show();
 
                 var prefix = 'colorbox';
                 // Remove Bindings and re-add
