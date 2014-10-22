@@ -274,6 +274,7 @@ function colorbox_node_field_formatter_info_alter(&$info) {
     //$info['entityreference_label']['module'] = 'colorbox_node';
     $info['entityreference_label']['settings'] += array(
       'colorbox_node_link' => FALSE,
+      'colorbox_node_classes' => '',
       'colorbox_node_width' => '600',
       'colorbox_node_height' => '600',
     );
@@ -289,12 +290,14 @@ function colorbox_node_field_formatter_settings_form_alter(&$settings_form, $con
     $display = $context['instance']['display'][$context['view_mode']];
     $settings = $display['settings'];
 
+    dsm($settings_form);
+
     $settings_form['colorbox_node_link'] = array(
       '#title' => t('Open in a Colorbox'),
       '#type' => 'checkbox',
       '#default_value' => $settings['colorbox_node_link'],
       '#dependency' => array(
-        'edit-fields-field-reference-settings-edit-form-settings-link' => array(1),
+        'edit-fields-field-entity-settings-edit-form-settings-link' => array(1),
       ),
     );
     $settings_form['colorbox_node_width'] = array(
@@ -302,7 +305,7 @@ function colorbox_node_field_formatter_settings_form_alter(&$settings_form, $con
       '#title' => t('Colorbox Width'),
       '#default_value' => !empty($settings['colorbox_node_width']) ? $settings['colorbox_node_width'] : '600',
       '#dependency' => array(
-        'edit-fields-field-reference-settings-edit-form-settings-colorbox-node-link' => array(1),
+        'edit-fields-field-entity-settings-edit-form-settings-colorbox-node-link' => array(1),
       ),
       '#dependency_count' => 1,
       '#weight' => 1,
@@ -312,10 +315,19 @@ function colorbox_node_field_formatter_settings_form_alter(&$settings_form, $con
       '#title' => t('Colorbox Height'),
       '#default_value' => !empty($settings['colorbox_node_height']) ? $settings['colorbox_node_height'] : '600',
       '#dependency' => array(
-        'edit-fields-field-reference-settings-edit-form-settings-colorbox-node-link' => array(1),
+        'edit-fields-field-entity-settings-edit-form-settings-colorbox-node-link' => array(1),
       ),
       '#dependency_count' => 1,
       '#weight' => 2,
+    );
+    $settings_form['colorbox_node_classes'] = array(
+      '#title' => t('Classes to add to the anchor tag (in addition to "colorbox-node")'),
+      '#type' => 'textfield',
+      '#default_value' => $settings['colorbox_node_classes'],
+      '#dependency' => array(
+        'edit-fields-field-entity-settings-edit-form-settings-colorbox-node-link' => array(1),
+      ),
+      '#weight' => 3,
     );
   }
 }
@@ -363,8 +375,16 @@ function colorbox_node_field_attach_view_alter(&$output, $context) {
     foreach (element_children($element) as $delta) {
       $label = $handler->getLabel($element['#items'][$delta]['entity']);
       if($uri = entity_uri($field['settings']['target_type'], $element['#items'][$delta]['entity'])) {
+        if (!empty($settings['colorbox_node_classes'])) {
+          $class = array_unique(explode(' ', trim($settings['colorbox_node_classes'])));
+        }
+        else {
+          $class = array();
+        }
+        $class[] = 'colorbox-node';
+
         $uri['options']['attributes'] = array(
-          'class' => array('colorbox-node'),
+          'class' => $class,
           'data-inner-width' => $settings['colorbox_node_width'],
           'data-inner-height' => $settings['colorbox_node_height'],
 
