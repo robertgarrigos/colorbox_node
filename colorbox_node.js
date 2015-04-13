@@ -4,8 +4,7 @@
         // our defined menu path to open in a colorbox modal.
         attach: function (context, settings) {
             // Make sure colorbox exists.
-            if (!$.isFunction($.colorbox)) {
-                alert(Drupal.t('Colorbox Library is not loaded.'));
+            if (!$.isFunction($.colorbox) || typeof settings.colorbox === 'undefined') {
                 return;
             }
 
@@ -13,12 +12,11 @@
             // If the mobile setting is turned on, it will turn off the colorbox modal for mobile devices.
             if (settings.colorbox.mobiledetect && window.matchMedia) {
                 // Disable Colorbox for small screens.
-                mq = window.matchMedia("(max-device-width: " + settings.colorbox.mobiledevicewidth + ")");
+                var mq = window.matchMedia("(max-device-width: " + settings.colorbox.mobiledevicewidth + ")");
                 if (mq.matches) {
                     return;
                 }
             }
-
 
             $('.colorbox-node', context).once('init-colorbox-node-processed', function () {
                 $(this).colorboxNode({'launch': false});
