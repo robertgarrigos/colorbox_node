@@ -54,6 +54,7 @@
 
         // Lets add our colorbox link after the base path if necessary.
         var base_path = Drupal.settings.basePath;
+        var path_prefix = Drupal.settings.pathPrefix;
         var pathname = parse.pathname;
 
         // Lets check to see if the pathname has a forward slash.
@@ -66,15 +67,15 @@
         var url = $.getParameterByName('q', href);
         if (base_path != '/') {
             if (url != '') {
-                var link = pathname.replace(base_path, base_path + '?q=colorbox/') + url;
+                var link = pathname.replace(base_path, base_path + parse.search.replace('?q=', '?q=/' + path_prefix + 'colorbox/'));
             } else {
-                var link = pathname.replace(base_path, base_path + 'colorbox/') + parse.search;
+                var link = pathname.replace(base_path, base_path + path_prefix + 'colorbox/') + parse.search;
             }
         } else {
             if (url != '') {
-                var link = base_path + '?q=colorbox' + pathname + url;
+                var link = base_path + parse.search.replace('?q=', '?q=/' + path_prefix + 'colorbox/');
             } else {
-                var link = base_path + 'colorbox' + pathname + parse.search;
+                var link = base_path + path_prefix + 'colorbox' + pathname + parse.search;
             }
         }
 
