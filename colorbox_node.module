@@ -37,13 +37,19 @@ function colorbox_node_menu() {
   $items['colorbox/%colorbox_node_url'] = array(
     'page callback' => 'colorbox_node_output',
     'page arguments' => array(1),
-    'access arguments' => array('access content'),
+    'access callback' => 'colorbox_node_check_access',
+    'access arguments' => array(1),
     'load arguments' => array('%map'),
     'delivery callback' => 'ajax_deliver',
     'theme callback' => 'ajax_base_page_theme',
     'type' => MENU_CALLBACK,
   );
   return $items;
+}
+
+function colorbox_node_check_access($path) {
+  $menu_item = menu_get_item($path);
+  return (isset($menu_item['access']) && $menu_item['access']);
 }
 
 /*
