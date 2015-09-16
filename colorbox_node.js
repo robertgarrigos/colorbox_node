@@ -89,6 +89,7 @@
 
         // Bind Ajax behaviors to all items showing the class.
         var element_settings = {};
+        element_settings.async = true;
 
         // This removes any loading/progress bar on the clicked link
         // and displays the colorbox loading screen instead.
