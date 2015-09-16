@@ -402,8 +402,7 @@ function colorbox_node_menu_attribute_info() {
  * Implements hook_field_formatter_info_alter().
  */
 function colorbox_node_field_formatter_info_alter(&$info) {
-  if(isset($info['entityreference_label'])) {
-    //$info['entityreference_label']['module'] = 'colorbox_node';
+  if(isset($info['entityreference_label']) && module_exists('field_formatter_settings')) {
     $info['entityreference_label']['settings'] += array(
       'colorbox_node_link' => FALSE,
       'colorbox_node_classes' => '',
