@@ -418,7 +418,7 @@ function colorbox_node_field_formatter_info_alter(&$info) {
  */
 function colorbox_node_field_formatter_settings_form_alter(&$settings_form, $context) {
   // Integration with the entityreference module
-  if ($context['instance']['display'][$context['view_mode']]['type'] == 'entityreference_label') {
+  if (isset($context['instance']['display'][$context['view_mode']]['type']) && $context['instance']['display'][$context['view_mode']]['type'] == 'entityreference_label') {
     $display = $context['instance']['display'][$context['view_mode']];
     $settings = $display['settings'];
 
