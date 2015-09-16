@@ -85,18 +85,132 @@ function colorbox_node_form_alter(&$form, &$form_state, $form_id) {
   }
 }
 
+
+/*
+ * Adds AJAX support to the registration form inside a colorbox modal.
+ */
+function colorbox_node_form_user_register_form_alter(&$form, &$form_state) {
+  colorbox_node_form_ajax_support($form, 'register');
+}
+
+/*
+ * Adds AJAX support to the login form inside a colorbox modal.
+ */
+function colorbox_node_form_user_login_alter(&$form, &$form_state) {
+  colorbox_node_form_ajax_support($form, 'login');
+}
+/*
+ * Adds AJAX support to the node edit form inside a colorbox modal.
+ */
+function colorbox_node_form_node_form_alter(&$form, &$form_state) {
+  colorbox_node_form_ajax_support($form, 'node');
+}
+
+/*
+ * Adds AJAX support to the user edit form inside a colorbox modal.
+ */
+function colorbox_node_form_user_profile_form_alter(&$form, &$form_state) {
+  colorbox_node_form_ajax_support($form, 'user', 'redirect', 'user');
+}
+
+/**
+ * @param $form
+ * @param $form_id
+ * @param string $action
+ * The action to take when the form is completed.
+ *   close    = Closes the colorbox modal.
+ *   redirect = Closes the colorbox modal and redirects the user to the $destination url
+ *   reload   = Reloads the current page.  This is good for the login form.
+ * @param string $destination
+ * Any URL pattern that can be passed to drupal_goto();
+ */
+function colorbox_node_form_ajax_support(&$form, $form_id, $action='close', $destination='') {
+  // Check to see if we are inside an active colorbox
+  if (colorbox_node_is_active()) {
+    $form['#prefix'] = '<div id="colorboxNode' . $form_id . 'Wrapper">';
+    $form['#suffix'] = '</div>';
+    $form['actions']['submit']['#id'] = 'colorboxNode' . $form_id . 'Submit';
+    $form['actions']['submit']['#ajax'] = array(
+      'callback' => 'colorbox_node_ajax_submit',
+      'wrapper' => 'colorboxNode' . $form_id . 'Wrapper',
+      'method' => 'replace',
+      'effect' => 'fade',
+    );
+    if ($action == 'reload') {
+      $form['#cbox_reload'] = TRUE;
+    }
+    elseif ($action == 'redirect') {
+      $form['#cbox_redirect'] = $destination;
+    }
+  }
+}
+
+
+/**
+ * Handles all the ajax forms and runs them through this
+ * central function to either return the form with error
+ * messages, or to close the colorbox and populate our
+ * messages div container.
+ *
+ * @param $form
+ * @param $form_state
+ * @return array
+ * @throws Exception
+ */
+function colorbox_node_ajax_submit($form, &$form_state) {
+  if (!form_get_errors()) {
+    // Set our commands for the return to just display status messages.
+    $commands = array();
+    // Close the colorbox modal.
+    // This is the default behavior.
+    $commands[] = ajax_command_invoke('#cboxClose', 'click');
+    // Reload the main window if required.
+    if (isset($form['#cbox_reload'])) {
+      // @TODO: What happens to our messages if the page is reloaded?
+      $commands[] = array('command' => 'colorboxNodeReload');
+    }
+    else
+    // Redirect the user to the passed in destination.
+    // @TODO: Add support for dynamic redirects based on newly created content
+    if (isset($form['#cbox_redirect'])) {
+      $url = url($form['#cbox_redirect']);
+      $commands[] = array('command' => 'colorboxNodeRedirect', 'data' => $url);
+    }
+    else {
+      // Lets see if we can find the natural redirect from the form.
+      // @TODO: I think the redirect key can also be an array.  Add checks for that.
+      if (isset($form_state['redirect']) && !empty($form_state['redirect'])) {
+        $commands[] = array('command' => 'colorboxNodeRedirect', 'data' => url($form_state['redirect']));
+      }
+      else {
+        // Set message.
+        // @TODO: How not to make this theme specific?
+        // @TODO: Maybe a variable on the admin settings page?
+        $commands[] = ajax_command_before('#main-content', theme('status_messages'));
+      }
+    }
+
+    return array('#type' => 'ajax', '#commands' => $commands);
+  }
+  return $form;
+}
+
 /*
  * Displays a node view without the page template.
  * Takes the path as our argument and from that we
  * will determine the internal path and node id.
  */
 function colorbox_node_output($path) {
-  // Lets beef this up and make it more intelligent around
-  // the system path.
+  // Tell others our modal window is active
+  drupal_static('colorbox_node_is_active', TRUE);
+
+  // Setup our return destination.
   if(!isset($_GET['destination'])) {
     $_GET['destination'] = $path;
   }
-  drupal_static('colorbox_original_q', $_GET['q']);
+
+  // Change our super global for the rest of the
+  // bootstrap process.
   $_GET['q'] = $path;
 
   // Fetch our callback based on our path.
@@ -162,7 +276,7 @@ function colorbox_node_output($path) {
  * find our system path and then return it.
  */
 function colorbox_node_url_load($arg, $path = array()) {
-  // First lets remove colorbox
+  // First lets remove 'colorbox'
   array_shift($path);
 
   // Lets determine if we have a prefix from our languages.
@@ -181,6 +295,13 @@ function colorbox_node_url_load($arg, $path = array()) {
   }
   // Now lets buld our path to return our system path,
   return drupal_get_normal_path(implode('/', $path));
+}
+
+/*
+ * Determines if the current page request is inside a modal window.
+ */
+function colorbox_node_is_active() {
+  return drupal_static('colorbox_node_is_active', FALSE);
 }
 
 /**
@@ -384,11 +505,9 @@ function colorbox_node_field_attach_view_alter(&$output, $context) {
     foreach (element_children($element) as $delta) {
       $label = $handler->getLabel($element['#items'][$delta]['entity']);
       if($uri = entity_uri($field['settings']['target_type'], $element['#items'][$delta]['entity'])) {
+        $class = array();
         if (!empty($settings['colorbox_node_classes'])) {
           $class = array_unique(explode(' ', trim($settings['colorbox_node_classes'])));
-        }
-        else {
-          $class = array();
         }
         $class[] = 'colorbox-node';
 

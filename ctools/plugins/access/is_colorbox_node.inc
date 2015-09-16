@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Plugin to provide access control based on arg(0, drupal_static('colorbox_original_q')) == 'colorbox'.
+ * Plugin to provide access control based for colorbox modals.
  */
 
 $plugin = array(
@@ -26,12 +26,7 @@ function colorbox_node_ctools_access_settings($form, &$form_state, $conf) {
  * Check for access.
  */
 function colorbox_node_ctools_access_check($conf, $context) {
-  if ( arg(0, drupal_static('colorbox_original_q')) == 'colorbox' ) {
-    return TRUE;
-  }
-  else {
-    return FALSE;
-  }
+  return colorbox_node_is_active();
 }
 
 /**

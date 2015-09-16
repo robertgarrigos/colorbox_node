@@ -1,4 +1,12 @@
 (function ($) {
+    Drupal.ajax.prototype.commands.colorboxNodeReload = function(ajax, response) {
+        location.reload();
+    };
+
+    Drupal.ajax.prototype.commands.colorboxNodeRedirect = function(ajax, response) {
+        window.location.replace(response.data);
+    };
+
     Drupal.behaviors.colorboxNode = {
         // Lets find our class name and change our URL to
         // our defined menu path to open in a colorbox modal.
