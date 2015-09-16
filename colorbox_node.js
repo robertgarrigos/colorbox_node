@@ -152,8 +152,8 @@
         var $this = $(this);
         var rel = $this.attr('rel');
         if(rel && $this.hasClass('colorbox-node-gallery')) {
-            if ($('a.colorbox-node-gallery[rel="' + rel + '"]:not("#colorbox a[rel="' + rel + '"]")').length > 1) {
-                $related = $('a.colorbox-node-gallery[rel="' + rel + '"]:not("#colorbox a[rel="' + rel + '"]")');
+            if ($('a.colorbox-node-gallery[rel="' + rel + '"]:not(#colorbox a[rel="' + rel + '"])').length > 1) {
+                $related = $('a.colorbox-node-gallery[rel="' + rel + '"]:not(#colorbox a[rel="' + rel + '"])');
 
                 // filter $related array by href, to have mutliple colorbox links to the same target
                 // appear as one item in the gallery only
