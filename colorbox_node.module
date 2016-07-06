@@ -110,7 +110,7 @@ function colorbox_node_form_node_form_alter(&$form, &$form_state) {
  * Adds AJAX support to the user edit form inside a colorbox modal.
  */
 function colorbox_node_form_user_profile_form_alter(&$form, &$form_state) {
-  colorbox_node_form_ajax_support($form, $form_state, 'user', 'replace', 'node/2');
+  colorbox_node_form_ajax_support($form, $form_state, 'user', 'redirect', 'user');
 }
 
 /**
