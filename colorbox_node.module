@@ -110,7 +110,7 @@ function colorbox_node_form_node_form_alter(&$form, &$form_state) {
  * Adds AJAX support to the user edit form inside a colorbox modal.
  */
 function colorbox_node_form_user_profile_form_alter(&$form, &$form_state) {
-  colorbox_node_form_ajax_support($form, $form_state, 'user', 'redirect', 'user');
+  colorbox_node_form_ajax_support($form, $form_state, 'user', 'replace', 'node/2');
 }
 
 /**
@@ -122,6 +122,7 @@ function colorbox_node_form_user_profile_form_alter(&$form, &$form_state) {
  *   close    = Closes the colorbox modal.
  *   redirect = Closes the colorbox modal and redirects the user to the $destination url
  *   reload   = Reloads the current page.  This is good for the login form.
+ *   replace  = Replaces the form/ajax data with the provided $destination.
  * @param string $destination
  * Any URL pattern that can be passed to drupal_goto();
  */
@@ -146,6 +147,9 @@ function colorbox_node_form_ajax_support(&$form, &$form_state, $form_id, $action
     elseif ($action == 'redirect') {
       $form['#cbox_redirect'] = $destination;
     }
+    elseif ($action == 'replace') {
+      $form['#cbox_replace'] = $destination;
+    }
   }
 }
 
@@ -165,6 +169,12 @@ function colorbox_node_ajax_submit($form, &$form_state) {
   if (!form_get_errors()) {
     // Set our commands for the return to just display status messages.
     $commands = array();
+
+    // Replace the content area with the provided destination
+    if (isset($form['#cbox_replace'])) {
+      return colorbox_node_output($form['#cbox_replace']);
+    }
+
     // Close the colorbox modal.
     // This is the default behavior.
     $commands[] = ajax_command_invoke('#cboxClose', 'click');
