@@ -39,7 +39,6 @@
     };
 
     $.fn.colorboxNodeLaunch = function(settings) {
-        console.log(settings);
         var $this = $(this).clone();
 
         // Clear out the rel to prevent any confusion if not using the gallery class.
@@ -66,7 +65,6 @@
             $this.colorboxNodeGroup();
         }
         params.open = true;
-        console.log(params);
 
         // Launch our colorbox with the provided settings
         $this.colorbox($.extend({}, Drupal.settings.colorbox, params));
