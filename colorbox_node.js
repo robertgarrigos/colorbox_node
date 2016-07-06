@@ -38,8 +38,45 @@
         }
     };
 
+    $.fn.colorboxNodeLaunch = function(settings) {
+        console.log(settings);
+        var $this = $(this).clone();
+
+        // Clear out the rel to prevent any confusion if not using the gallery class.
+        if(!$this.hasClass('colorbox-node-gallery')) {
+            $this.attr('rel', '');
+        }
+
+        // Lets extract our width and height giving priority to the data attributes.
+        var innerWidth = $this.data('inner-width');
+        var innerHeight = $this.data('inner-height');
+        if (typeof innerWidth != 'undefined' && typeof innerHeight != 'undefined') {
+            var params = $.urlDataParams(innerWidth, innerHeight);
+        } else {
+            var params = $.urlParams(settings.href);
+            console.log(settings.href);
+        }
+
+        // If we did not find a width or height, lets use the default.
+        if (params.innerHeight == undefined) params.innerHeight = settings.height;
+        if (params.innerWidth == undefined) params.innerWidth = settings.width;
+
+        params.html = '<div id="colorboxNodeLoading"></div>';
+        params.onComplete = function () {
+            $this.colorboxNodeGroup();
+        }
+        params.open = true;
+        console.log(params);
+
+        // Launch our colorbox with the provided settings
+        $this.colorbox($.extend({}, Drupal.settings.colorbox, params));
+    }
+
     // Bind our colorbox node functionality to an anchor
     $.fn.colorboxNode = function (options) {
+        var $this = this;
+        options = options || {};
+
         var settings = {
             'launch': true,
             'width': Drupal.settings.colorbox_node.width,
@@ -48,15 +85,15 @@
 
         $.extend(settings, options);
 
-        var href = $(this).attr('data-href');
-        if (typeof href == 'undefined' || href == false) {
-            href = $(this).attr('href');
+        settings.href = $this.attr('data-href');
+        if (typeof settings.href == 'undefined' || settings.href == false) {
+            settings.href = $this.attr('href');
         }
         // Create an element so we can parse our a URL no matter if its internal or external.
         var parse = document.createElement('a');
-        parse.href = href;
+        parse.href = settings.href;
 
-        if(!href) {
+        if(!settings.href) {
             alert(Drupal.t('No url found on element'));
         }
 
@@ -72,22 +109,22 @@
         }
 
         // If clean URL's are not turned on, lets check for that.
-        var url = $.getParameterByName('q', href);
+        var cleanURLs = $.getParameterByName('q', settings.href);
         if (base_path != '/') {
-            if (url != '') {
-                var link = pathname.replace(base_path, base_path + parse.search.replace('?q=', '?q=/' + path_prefix + 'colorbox/'));
+            if (cleanURLs != '') {
+                settings.link = pathname.replace(base_path, base_path + parse.search.replace('?q=', '?q=/' + path_prefix + 'colorbox/'));
             } else {
-                var link = pathname.replace(base_path, base_path + path_prefix + 'colorbox/') + parse.search;
+                settings.link = pathname.replace(base_path, base_path + path_prefix + 'colorbox/') + parse.search;
             }
         } else {
-            if (url != '') {
-                var link = base_path + parse.search.replace('?q=', '?q=/' + path_prefix + 'colorbox/');
+            if (cleanURLs != '') {
+                settings.link = base_path + parse.search.replace('?q=', '?q=/' + path_prefix + 'colorbox/');
             } else {
-                var link = base_path + path_prefix + 'colorbox' + pathname + parse.search;
+                settings.link = base_path + path_prefix + 'colorbox' + pathname + parse.search;
             }
         }
 
-        // Bind Ajax behaviors to all items showing the class.
+        // Bind Ajax behaviors to the element
         var element_settings = {};
         element_settings.async = true;
 
@@ -96,41 +133,10 @@
         element_settings.progress = { 'type': 'none' };
         // For anchor tags, these will go to the target of the anchor rather
         // than the usual location.
-        if (href) {
-            element_settings.url = link;
+        if (settings.link) {
+            element_settings.url = settings.link;
             element_settings.event = 'click';
         }
-
-        $(this).click(function () {
-            var $this = $(this).clone();
-
-            // Clear out the rel to prevent any confusion if not using the gallery class.
-            if(!$this.hasClass('colorbox-node-gallery')) {
-                $this.attr('rel', '');
-            }
-
-            // Lets extract our width and height giving priority to the data attributes.
-            var innerWidth = $this.data('inner-width');
-            var innerHeight = $this.data('inner-height');
-            if (typeof innerWidth != 'undefined' && typeof innerHeight != 'undefined') {
-                var params = $.urlDataParams(innerWidth, innerHeight);
-            } else {
-                var params = $.urlParams(href);
-            }
-
-            // If we did not find a width or height, lets use the default.
-            if (params.innerHeight == undefined) params.innerHeight = settings.height;
-            if (params.innerWidth == undefined) params.innerWidth = settings.width;
-
-            params.html = '<div id="colorboxNodeLoading"></div>';
-            params.onComplete = function () {
-                $this.colorboxNodeGroup();
-            }
-            params.open = true;
-
-            // Launch our colorbox with the provided settings
-            $this.colorbox($.extend({}, Drupal.settings.colorbox, params));
-        });
 
         // Log our click handler to our ajax object
         var base = $(this).attr('id');
@@ -139,7 +145,12 @@
         // Default to auto click for manual call to this function.
         if (settings.launch) {
             Drupal.ajax[base].eventResponse(this, 'click');
-            $(this).click();
+            $(this).colorboxNodeLaunch(settings);
+        }
+        else {
+            $(this).click(function() {
+                $(this).colorboxNodeLaunch(settings);
+            });
         }
     }
 

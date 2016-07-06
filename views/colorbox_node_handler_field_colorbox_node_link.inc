@@ -65,10 +65,9 @@ class colorbox_node_handler_field_colorbox_node_link extends views_handler_field
       '#default_value' => !empty($this->options['node_in_colorbox_rel']) ? $this->options['node_in_colorbox_rel'] : '',
       '#description' => t("Enter a rel attribute here to group colorbox node links into a gallery."),
       '#dependency' => array(
-        'edit-options-link-to-node' => array(1),
         'edit-options-node-in-colorbox' => array(1),
       ),
-      '#dependency_count' => 2,
+      '#dependency_count' => 1,
       '#weight' => -94,
     );
   }

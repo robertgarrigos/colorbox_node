@@ -90,31 +90,32 @@ function colorbox_node_form_alter(&$form, &$form_state, $form_id) {
  * Adds AJAX support to the registration form inside a colorbox modal.
  */
 function colorbox_node_form_user_register_form_alter(&$form, &$form_state) {
-  colorbox_node_form_ajax_support($form, 'register');
+  colorbox_node_form_ajax_support($form, $form_state, 'register');
 }
 
 /*
  * Adds AJAX support to the login form inside a colorbox modal.
  */
 function colorbox_node_form_user_login_alter(&$form, &$form_state) {
-  colorbox_node_form_ajax_support($form, 'login');
+  colorbox_node_form_ajax_support($form, $form_state, 'login');
 }
 /*
  * Adds AJAX support to the node edit form inside a colorbox modal.
  */
 function colorbox_node_form_node_form_alter(&$form, &$form_state) {
-  colorbox_node_form_ajax_support($form, 'node');
+  colorbox_node_form_ajax_support($form, $form_state, 'node');
 }
 
 /*
  * Adds AJAX support to the user edit form inside a colorbox modal.
  */
 function colorbox_node_form_user_profile_form_alter(&$form, &$form_state) {
-  colorbox_node_form_ajax_support($form, 'user', 'redirect', 'user');
+  colorbox_node_form_ajax_support($form, $form_state, 'user', 'redirect', 'user');
 }
 
 /**
  * @param $form
+ * @param $form_state
  * @param $form_id
  * @param string $action
  * The action to take when the form is completed.
@@ -124,15 +125,18 @@ function colorbox_node_form_user_profile_form_alter(&$form, &$form_state) {
  * @param string $destination
  * Any URL pattern that can be passed to drupal_goto();
  */
-function colorbox_node_form_ajax_support(&$form, $form_id, $action='close', $destination='') {
+function colorbox_node_form_ajax_support(&$form, &$form_state, $form_id, $action='close', $destination='') {
   // Check to see if we are inside an active colorbox
-  if (colorbox_node_is_active()) {
-    $form['#prefix'] = '<div id="colorboxNode' . $form_id . 'Wrapper">';
+  if (colorbox_node_is_active() || isset($form_state['#colorboxNode'])) {
+    // Set our form to be active as AJAX upload fields will be in a
+    // different context and this code will never be called again and will fail out.
+    $form_state['#colorboxNode'] = TRUE;
+    $form['#prefix'] = '<div id="colorboxNode-' . $form_id . '-Wrapper">';
     $form['#suffix'] = '</div>';
-    $form['actions']['submit']['#id'] = 'colorboxNode' . $form_id . 'Submit';
+    $form['actions']['submit']['#id'] = 'colorboxNode-' . $form_id . '-Submit';
     $form['actions']['submit']['#ajax'] = array(
       'callback' => 'colorbox_node_ajax_submit',
-      'wrapper' => 'colorboxNode' . $form_id . 'Wrapper',
+      'wrapper' => 'colorboxNode-' . $form_id . '-Wrapper',
       'method' => 'replace',
       'effect' => 'fade',
     );
@@ -179,8 +183,11 @@ function colorbox_node_ajax_submit($form, &$form_state) {
     else {
       // Lets see if we can find the natural redirect from the form.
       // @TODO: I think the redirect key can also be an array.  Add checks for that.
-      if (isset($form_state['redirect']) && !empty($form_state['redirect'])) {
-        $commands[] = array('command' => 'colorboxNodeRedirect', 'data' => url($form_state['redirect']));
+      $redirect = isset($form_state['redirect']) ? $form_state['redirect'] : FALSE;
+      $redirect = is_array($redirect) ? array_shift($form_state['redirect']) : $redirect;
+
+      if ($redirect) {
+        $commands[] = array('command' => 'colorboxNodeRedirect', 'data' => url($redirect));
       }
       else {
         // Set message.
