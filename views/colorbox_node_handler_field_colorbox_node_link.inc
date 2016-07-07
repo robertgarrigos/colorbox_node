@@ -12,6 +12,9 @@
  */
 class colorbox_node_handler_field_colorbox_node_link extends views_handler_field_node_link {
 
+  /**
+   * @return array
+   */
   function option_definition() {
     $options = parent::option_definition();
     $options['node_in_colorbox'] = array('default' => isset($this->definition['node_in_colorbox default']) ? $this->definition['node_in_colorbox default'] : FALSE, 'bool' => FALSE);
@@ -81,7 +84,7 @@ class colorbox_node_handler_field_colorbox_node_link extends views_handler_field
         if (!empty($this->options['node_in_colorbox'])) {
           // If we have a rel gallery for the colorbox, lets add our rel attribute
           // and our gallery class to the link output.
-          if(!empty($this->options['node_in_colorbox_rel'])) {
+          if (!empty($this->options['node_in_colorbox_rel'])) {
             $this->options['alter']['rel'] = $this->options['node_in_colorbox_rel'];
             $this->options['alter']['link_class'] = 'colorbox-node colorbox-node-gallery';
           }

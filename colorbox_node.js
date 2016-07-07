@@ -1,3 +1,8 @@
+/*
+ * @file
+ * Integration with the colorbox library/module
+ */
+
 (function ($) {
     Drupal.ajax.prototype.commands.colorboxNodeReload = function(ajax, response) {
         location.reload();
@@ -53,7 +58,6 @@
             var params = $.urlDataParams(innerWidth, innerHeight);
         } else {
             var params = $.urlParams(settings.href);
-            console.log(settings.href);
         }
 
         // If we did not find a width or height, lets use the default.
@@ -63,12 +67,12 @@
         params.html = '<div id="colorboxNodeLoading"></div>';
         params.onComplete = function () {
             $this.colorboxNodeGroup();
-        }
+        };
         params.open = true;
 
         // Launch our colorbox with the provided settings
         $this.colorbox($.extend({}, Drupal.settings.colorbox, params));
-    }
+    };
 
     // Bind our colorbox node functionality to an anchor
     $.fn.colorboxNode = function (options) {
@@ -150,7 +154,7 @@
                 $(this).colorboxNodeLaunch(settings);
             });
         }
-    }
+    };
 
     // Allow for grouping on links to showcase a gallery with left/right arrows.
     // This function will find the next index of each link on the page by the rel
@@ -160,7 +164,7 @@
         // Lets do setup our gallery type of functions.
         var $this = $(this);
         var rel = $this.attr('rel');
-        if(rel && $this.hasClass('colorbox-node-gallery')) {
+        if (rel && $this.hasClass('colorbox-node-gallery')) {
             if ($('a.colorbox-node-gallery[rel="' + rel + '"]:not(#colorbox a[rel="' + rel + '"])').length > 1) {
                 $related = $('a.colorbox-node-gallery[rel="' + rel + '"]:not(#colorbox a[rel="' + rel + '"])');
 
@@ -182,11 +186,11 @@
                 // Show our gallery buttons
                 $('#cboxPrevious, #cboxNext').show();
                 $.colorbox.next = function () {
-                    index = getIndex(1);
+                    index = get_index(1);
                     $related[index].click();
                 };
                 $.colorbox.prev = function () {
-                    index = getIndex(-1);
+                    index = get_index(-1);
                     $related[index].click();
                 };
 
@@ -215,14 +219,14 @@
                 });
             }
 
-            function getIndex(increment) {
+            function get_index(increment) {
                 var max = $related.length;
                 var newIndex = (idx + increment) % max;
                 return (newIndex < 0) ? max + newIndex : newIndex;
             }
 
         }
-    }
+    };
 
     // Find a colorbox link by href in an array
     $.findHref = function(items, href) {
@@ -279,6 +283,6 @@
             return "";
         else
             return decodeURIComponent(found[1].replace(/\+/g, " "));
-    }
+    };
 
 })(jQuery);

@@ -6,7 +6,7 @@
  * a colorbox.
  */
 
-/*
+/**
  * Implments hook_preprocess_html().
  */
 function colorbox_node_preprocess_html() {
@@ -30,7 +30,7 @@ function colorbox_node_preprocess_html() {
 
 }
 
-/*
+/**
  * Implements hook_menu().
  */
 function colorbox_node_menu() {
@@ -47,12 +47,18 @@ function colorbox_node_menu() {
   return $items;
 }
 
+/**
+ * Checks the access of the path for the current user
+ * based on the menu system access
+ * @param $path
+ * @return bool
+ */
 function colorbox_node_check_access($path) {
   $menu_item = menu_get_item($path);
   return (isset($menu_item['access']) && $menu_item['access']);
 }
 
-/*
+/**
  * Implements hook_form_alter().
  */
 function colorbox_node_form_alter(&$form, &$form_state, $form_id) {
@@ -67,7 +73,7 @@ function colorbox_node_form_alter(&$form, &$form_state, $form_id) {
         '#title' => module_exists('context') ? t('Enable Regions') : t('Enable Regions <span class="error">Missing Context Module</span>'),
         '#description' => t('This enables regions to be rendered inside the colorbox modal.  The context module can further target a colorbox modal. <em><b>Experimental</b></em>'),
         '#default_value' => variable_get('colorbox_node_regions', FALSE),
-        '#disabled' => !module_exists('context') ? true : false,
+        '#disabled' => !module_exists('context') ? TRUE : FALSE,
       );
       $form['colorbox_node']['colorbox_node_width'] = array(
         '#type' => 'textfield',
@@ -86,27 +92,27 @@ function colorbox_node_form_alter(&$form, &$form_state, $form_id) {
 }
 
 
-/*
+/**
  * Adds AJAX support to the registration form inside a colorbox modal.
  */
 function colorbox_node_form_user_register_form_alter(&$form, &$form_state) {
   colorbox_node_form_ajax_support($form, $form_state, 'register');
 }
 
-/*
+/**
  * Adds AJAX support to the login form inside a colorbox modal.
  */
 function colorbox_node_form_user_login_alter(&$form, &$form_state) {
   colorbox_node_form_ajax_support($form, $form_state, 'login');
 }
-/*
+/**
  * Adds AJAX support to the node edit form inside a colorbox modal.
  */
 function colorbox_node_form_node_form_alter(&$form, &$form_state) {
   colorbox_node_form_ajax_support($form, $form_state, 'node');
 }
 
-/*
+/**
  * Adds AJAX support to the user edit form inside a colorbox modal.
  */
 function colorbox_node_form_user_profile_form_alter(&$form, &$form_state) {
@@ -124,7 +130,6 @@ function colorbox_node_form_user_profile_form_alter(&$form, &$form_state) {
  *   reload   = Reloads the current page.  This is good for the login form.
  *   replace  = Replaces the form/ajax data with the provided $destination.
  * @param string $destination
- * Any URL pattern that can be passed to drupal_goto();
  */
 function colorbox_node_form_ajax_support(&$form, &$form_state, $form_id, $action='close', $destination='') {
   // Check to see if we are inside an active colorbox
@@ -212,7 +217,7 @@ function colorbox_node_ajax_submit($form, &$form_state) {
   return $form;
 }
 
-/*
+/**
  * Displays a node view without the page template.
  * Takes the path as our argument and from that we
  * will determine the internal path and node id.
@@ -222,7 +227,7 @@ function colorbox_node_output($path) {
   drupal_static('colorbox_node_is_active', TRUE);
 
   // Setup our return destination.
-  if(!isset($_GET['destination'])) {
+  if (!isset($_GET['destination'])) {
     $_GET['destination'] = $path;
   }
 
@@ -244,9 +249,9 @@ function colorbox_node_output($path) {
   // Is we have an array, lets assume we need to render it out.
   if (is_array($page_callback_result)) {
     if (isset($page_callback_result['nodes'])) {
-      foreach ($page_callback_result['nodes'] as $nid => $tmpNode) {
-        if (isset($tmpNode['#view_mode'])) {
-          $node_view = $tmpNode['#node'];
+      foreach ($page_callback_result['nodes'] as $nid => $tmp_node) {
+        if (isset($tmp_node['#view_mode'])) {
+          $node_view = $tmp_node['#node'];
           $node_view_array = node_view($node_view, 'colorbox');
           if (module_exists('comment')) {
             $node_view_array['comments'] = comment_node_page_additions($node_view);
@@ -287,7 +292,7 @@ function colorbox_node_output($path) {
   return array('#type' => 'ajax', '#commands' => $commands);
 }
 
-/*
+/**
  * Takes a path as an array of all our arguments from the
  * url structure.  We then put that structure back together,
  * find our system path and then return it.
@@ -314,7 +319,7 @@ function colorbox_node_url_load($arg, $path = array()) {
   return drupal_get_normal_path(implode('/', $path));
 }
 
-/*
+/**
  * Determines if the current page request is inside a modal window.
  */
 function colorbox_node_is_active() {
@@ -373,7 +378,7 @@ function colorbox_node_context_registry() {
 }
 
 /**
- * Implement hook_ctools_plugin_api()
+ * Implement hook_ctools_plugin_api().
  */
 function colorbox_node_ctools_plugin_api($module, $api) {
   if ($module == 'page_manager') {
@@ -382,7 +387,7 @@ function colorbox_node_ctools_plugin_api($module, $api) {
 }
 
 /**
- * Implement hook_ctools_plugin_directory()
+ * Implement hook_ctools_plugin_directory().
  */
 function colorbox_node_ctools_plugin_directory($module, $plugin) {
   if ($module == 'page_manager' || $module == 'ctools') {
@@ -415,11 +420,11 @@ function colorbox_node_menu_attribute_info() {
 }
 
 
-/*
+/**
  * Implements hook_field_formatter_info_alter().
  */
 function colorbox_node_field_formatter_info_alter(&$info) {
-  if(isset($info['entityreference_label']) && module_exists('field_formatter_settings')) {
+  if (isset($info['entityreference_label']) && module_exists('field_formatter_settings')) {
     $info['entityreference_label']['settings'] += array(
       'colorbox_node_link' => FALSE,
       'colorbox_node_classes' => '',
@@ -438,7 +443,7 @@ function colorbox_node_field_formatter_settings_form_alter(&$settings_form, $con
     $display = $context['instance']['display'][$context['view_mode']];
     $settings = $display['settings'];
 
-    switch($context['form']['#form_id']) {
+    switch ($context['form']['#form_id']) {
       case 'field_ui_display_overview_form':
         $class = 'fields-field-entity-settings-edit-form-settings';
         break;
@@ -453,7 +458,7 @@ function colorbox_node_field_formatter_settings_form_alter(&$settings_form, $con
       '#type' => 'checkbox',
       '#default_value' => $settings['colorbox_node_link'],
       '#dependency' => array(
-        'edit-'. $class .'-link' => array(1),
+        'edit-' . $class . '-link' => array(1),
       ),
     );
     $settings_form['colorbox_node_width'] = array(
@@ -461,7 +466,7 @@ function colorbox_node_field_formatter_settings_form_alter(&$settings_form, $con
       '#title' => t('Colorbox Width'),
       '#default_value' => !empty($settings['colorbox_node_width']) ? $settings['colorbox_node_width'] : '600',
       '#dependency' => array(
-        'edit-'. $class .'-colorbox-node-link' => array(1),
+        'edit-' . $class . '-colorbox-node-link' => array(1),
       ),
       '#dependency_count' => 1,
       '#weight' => 1,
@@ -471,7 +476,7 @@ function colorbox_node_field_formatter_settings_form_alter(&$settings_form, $con
       '#title' => t('Colorbox Height'),
       '#default_value' => !empty($settings['colorbox_node_height']) ? $settings['colorbox_node_height'] : '600',
       '#dependency' => array(
-        'edit-'. $class .'-colorbox-node-link' => array(1),
+        'edit-' . $class . '-colorbox-node-link' => array(1),
       ),
       '#dependency_count' => 1,
       '#weight' => 2,
@@ -481,7 +486,7 @@ function colorbox_node_field_formatter_settings_form_alter(&$settings_form, $con
       '#type' => 'textfield',
       '#default_value' => $settings['colorbox_node_classes'],
       '#dependency' => array(
-        'edit-'. $class .'-colorbox-node-link' => array(1),
+        'edit-' . $class . '-colorbox-node-link' => array(1),
       ),
       '#weight' => 3,
     );
@@ -510,11 +515,9 @@ function colorbox_node_field_formatter_settings_summary_alter(&$summary, $contex
 function colorbox_node_field_attach_view_alter(&$output, $context) {
   foreach (element_children($output) as $field_name) {
     $element = &$output[$field_name];
-
-
     $field = field_info_field($field_name);
 
-    if(!isset($field['settings']['target_type'])) continue;
+    if (!isset($field['settings']['target_type'])) continue;
 
     // Load up the rest of our data since we have a target type.
     $instance = field_info_instance($element['#entity_type'], $field_name, $element['#bundle']);
@@ -530,14 +533,14 @@ function colorbox_node_field_attach_view_alter(&$output, $context) {
     }
 
     // If we are not linking as a colorbox, then just continue on.
-    if(!isset($settings['colorbox_node_link']) || !$settings['colorbox_node_link']) {
+    if (!isset($settings['colorbox_node_link']) || !$settings['colorbox_node_link']) {
       continue;
     }
 
     $handler = entityreference_get_selection_handler($field, $instance, $element['#entity_type'], $entity);
     foreach (element_children($element) as $delta) {
       $label = $handler->getLabel($element['#items'][$delta]['entity']);
-      if($uri = entity_uri($field['settings']['target_type'], $element['#items'][$delta]['entity'])) {
+      if ($uri = entity_uri($field['settings']['target_type'], $element['#items'][$delta]['entity'])) {
         $class = array();
         if (!empty($settings['colorbox_node_classes'])) {
           $class = array_unique(explode(' ', trim($settings['colorbox_node_classes'])));
